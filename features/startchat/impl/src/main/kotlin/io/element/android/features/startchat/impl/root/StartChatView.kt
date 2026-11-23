@@ -179,13 +179,7 @@ private fun CreateRoomActionButtonsList(
                 onClick = onNewRoomClick,
             )
         }
-        item {
-            CreateRoomActionButton(
-                iconRes = CompoundDrawables.ic_compound_list_bulleted,
-                text = stringResource(id = R.string.screen_room_directory_search_title),
-                onClick = onRoomDirectorySearchClick,
-            )
-        }
+        // Leveragers: no "Browse all rooms" entry, the chat server has no public rooms.
         item {
             CreateRoomActionButton(
                 iconRes = CompoundDrawables.ic_compound_share_android,

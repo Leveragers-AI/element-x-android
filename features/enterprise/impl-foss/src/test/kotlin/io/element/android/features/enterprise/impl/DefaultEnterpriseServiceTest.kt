@@ -31,19 +31,21 @@ class DefaultEnterpriseServiceTest {
     @Test
     fun accountProviderAllowList() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.accountProviderAllowList()).isEmpty()
+        assertThat(defaultEnterpriseService.accountProviderAllowList()).containsExactly(LEVERAGERS_ACCOUNT_PROVIDER)
     }
 
     @Test
-    fun `canConnectToAnyAccountProvider is always true`() = runTest {
+    fun `canConnectToAnyAccountProvider is always false`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.canConnectToAnyAccountProvider()).isTrue()
+        assertThat(defaultEnterpriseService.canConnectToAnyAccountProvider()).isFalse()
     }
 
     @Test
-    fun `isAllowedToConnectToAccountProvider is true for all account providers`() = runTest {
+    fun `isAllowedToConnectToAccountProvider is true only for chat leveragers com`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric())).isTrue()
+        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric("chat.leveragers.com"))).isTrue()
+        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric("https://chat.leveragers.com/"))).isTrue()
+        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric("matrix.org"))).isFalse()
     }
 
     @Test
@@ -101,10 +103,10 @@ class DefaultEnterpriseServiceTest {
     }
 
     @Test
-    fun `bugReportUrlFlow only emits UseDefault`() = runTest {
+    fun `bugReportUrlFlow only emits Disabled`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
         defaultEnterpriseService.bugReportUrlFlow(A_SESSION_ID).test {
-            assertThat(awaitItem()).isEqualTo(BugReportUrl.UseDefault)
+            assertThat(awaitItem()).isEqualTo(BugReportUrl.Disabled)
             awaitComplete()
         }
     }

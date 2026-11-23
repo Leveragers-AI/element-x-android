@@ -98,7 +98,7 @@ class OnBoardingPresenterTest {
             assertThat(initialState.canReportBug).isFalse()
             assertThat(initialState.isAddingAccount).isFalse()
             val finalState = awaitItem()
-            assertThat(finalState.canLoginWithQrCode).isTrue()
+            assertThat(finalState.canLoginWithQrCode).isEqualTo(OnBoardingConfig.CAN_LOGIN_WITH_QR_CODE)
         }
     }
 
@@ -226,7 +226,7 @@ class OnBoardingPresenterTest {
             skipItems(1)
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isNull()
-                assertThat(it.canLoginWithQrCode).isTrue()
+                assertThat(it.canLoginWithQrCode).isEqualTo(OnBoardingConfig.CAN_LOGIN_WITH_QR_CODE)
                 assertThat(it.canCreateAccount).isFalse()
             }
         }
@@ -249,7 +249,7 @@ class OnBoardingPresenterTest {
             skipItems(1)
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(anAccountProviderManaged(serverName = ACCOUNT_PROVIDER_FROM_CONFIG))
-                assertThat(it.canLoginWithQrCode).isTrue()
+                assertThat(it.canLoginWithQrCode).isEqualTo(OnBoardingConfig.CAN_LOGIN_WITH_QR_CODE)
                 assertThat(it.canCreateAccount).isFalse()
             }
         }

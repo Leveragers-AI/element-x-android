@@ -14,8 +14,14 @@ import org.junit.Test
 
 class DefaultSessionEnterpriseServiceTest {
     @Test
-    fun `isElementCallAvailable is always true`() = runTest {
+    fun `isElementCallAvailable is always false`() = runTest {
         val service = DefaultSessionEnterpriseService()
-        assertThat(service.isElementCallAvailable()).isTrue()
+        assertThat(service.isElementCallAvailable()).isFalse()
+    }
+
+    @Test
+    fun `arePublicRoomsDisabledByHomeserver is always true`() = runTest {
+        val service = DefaultSessionEnterpriseService()
+        assertThat(service.arePublicRoomsDisabledByHomeserver()).isTrue()
     }
 }

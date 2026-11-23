@@ -114,19 +114,7 @@ class StartChatViewTest : RobolectricTest() {
         }
     }
 
-    @Test
-    fun `clicking on room directory invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<StartChatEvent>(expectEvents = false)
-        ensureCalledOnce {
-            setStartChatView(
-                aCreateRoomRootState(
-                    eventSink = eventsRecorder,
-                ),
-                onRoomDirectorySearchClick = it
-            )
-            clickOn(R.string.screen_room_directory_search_title)
-        }
-    }
+    // Leveragers: the "Browse all rooms" entry is removed from this screen, so its click test is gone.
 }
 
 private fun AndroidComposeUiTest<ComponentActivity>.setStartChatView(

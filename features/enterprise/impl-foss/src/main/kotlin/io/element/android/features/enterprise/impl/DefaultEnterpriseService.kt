@@ -37,9 +37,11 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
-    override fun accountProviderAllowList(): List<AccountProvider> = emptyList()
-    override fun canConnectToAnyAccountProvider(): Boolean = true
-    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) = true
+    // Leveragers: the app only signs in to our chat server; the start screen then shows a single button.
+    override fun accountProviderAllowList(): List<AccountProvider> = listOf(LEVERAGERS_ACCOUNT_PROVIDER)
+    override fun canConnectToAnyAccountProvider(): Boolean = false
+    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) =
+        accountProviderAllowList().any { it.matches(accountProvider) }
     override suspend fun isElementProEnforced(serverName: String): Boolean = withContext(dispatchers.io) {
         val temporaryMatrixClient = temporaryMatrixClientFactory.create(serverName).getOrElse { return@withContext false }
         temporaryMatrixClient.use { client ->
@@ -71,11 +73,21 @@ class DefaultEnterpriseService(
     override fun unifiedPushDefaultPushGateway(): String? = null
 
     override fun bugReportUrlFlow(sessionId: SessionId?): Flow<BugReportUrl> {
-        return flowOf(BugReportUrl.UseDefault)
+        // Leveragers: no bug reports to Element's servers.
+        return flowOf(BugReportUrl.Disabled)
     }
 
     override fun getNoisyNotificationChannelId(sessionId: SessionId): String? = null
 }
+
+/**
+ * Leveragers: the only server the app connects to.
+ */
+internal val LEVERAGERS_ACCOUNT_PROVIDER = AccountProvider.Managed(
+    serverName = "chat.leveragers.com",
+    baseUrl = "https://chat.leveragers.com",
+    canUseServerName = true,
+)
 
 /**
  * A minimal version of the enterprise config that only contains the fields we need to check if Element Pro is enforced.

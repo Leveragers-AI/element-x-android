@@ -142,7 +142,7 @@ class OnBoardingPresenter(
             productionApplicationName = buildMeta.productionApplicationName,
             defaultAccountProvider = defaultAccountProvider,
             mustChooseAccountProvider = mustChooseAccountProvider,
-            canLoginWithQrCode = canLoginWithQrCode,
+            canLoginWithQrCode = canLoginWithQrCode && OnBoardingConfig.CAN_LOGIN_WITH_QR_CODE,
             canCreateAccount = defaultAccountProvider == null && canConnectToAnyAccountProvider && OnBoardingConfig.CAN_CREATE_ACCOUNT,
             canReportBug = canReportBug && showReportBug,
             loginModeState = loginModeState,
