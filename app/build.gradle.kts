@@ -88,6 +88,14 @@ android {
             storeFile = file("./signature/debug.keystore")
             storePassword = "android"
         }
+        // Leveragers: our signing key, given by the environment (GitHub Actions secrets, see LEVERAGERS.md).
+        register("leveragers") {
+            storeType = "pkcs12"
+            storeFile = System.getenv("LEVERAGERS_KEYSTORE_FILE")?.ifBlank { null }?.let { file(it) }
+            storePassword = System.getenv("LEVERAGERS_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("LEVERAGERS_KEY_ALIAS")
+            keyPassword = System.getenv("LEVERAGERS_KEYSTORE_PASSWORD")
+        }
         register("nightly") {
             keyAlias = environmentOrGradleValue("ELEMENT_ANDROID_NIGHTLY_KEYID", "signing.element.nightly.keyId")
             keyPassword = environmentOrGradleValue("ELEMENT_ANDROID_NIGHTLY_KEYPASSWORD", "signing.element.nightly.keyPassword")
@@ -124,7 +132,12 @@ android {
                 "login_redirect_scheme",
                 oAuthRedirectSchemeBase,
             )
-            signingConfig = signingConfigs.getByName("debug")
+            // Leveragers: signed with our key when it is provided, else with the debug key as upstream.
+            signingConfig = if (System.getenv("LEVERAGERS_KEYSTORE_FILE").isNullOrBlank()) {
+                signingConfigs.getByName("debug")
+            } else {
+                signingConfigs.getByName("leveragers")
+            }
 
             optimization {
                 enable = true

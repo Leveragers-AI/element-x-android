@@ -1,0 +1,54 @@
+# Leveragers: sign in to chat.leveragers.com with the throwaway test account, through our e-mail-first page.
+appId: com.leveragers.agents
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Sign in to chat.leveragers.com"
+    timeout: 60000
+- takeScreenshot: shots/01-start
+- tapOn: "Sign in to chat.leveragers.com"
+# Chrome custom tab: our e-mail-first page.
+- extendedWaitUntil:
+    visible:
+      id: "email"
+    timeout: 60000
+- takeScreenshot: shots/02-email-page
+- tapOn:
+    id: "email"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    id: "submit"
+- extendedWaitUntil:
+    visible:
+      id: "password"
+    timeout: 30000
+- tapOn:
+    id: "password"
+- inputText: ${TEST_PASSWORD}
+# First sign-in of the account: the page asks to confirm the new password.
+- runFlow:
+    when:
+      visible:
+        id: "confirm"
+    commands:
+      - tapOn:
+          id: "confirm"
+      - inputText: ${TEST_PASSWORD}
+- hideKeyboard
+- takeScreenshot: shots/03-password
+- tapOn:
+    id: "submit"
+# Back in the app.
+- runFlow:
+    when:
+      visible: "Not now"
+    commands:
+      - takeScreenshot: shots/04-prompt
+      - tapOn: "Not now"
+- extendedWaitUntil:
+    visible: "Chats"
+    timeout: 90000
+- takeScreenshot: shots/05-home
