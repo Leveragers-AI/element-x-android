@@ -41,14 +41,20 @@ appId: com.leveragers.agents
 - takeScreenshot: shots/03-password
 - tapOn:
     id: "submit"
+# Tuwunel's "Almost there" page (our skin): a tap hands the sign-in back to the app.
+- extendedWaitUntil:
+    visible: "Ouvrir Element"
+    timeout: 60000
+- takeScreenshot: shots/04-almost-there
+- tapOn: "Ouvrir Element"
 # Back in the app.
 - runFlow:
     when:
       visible: "Not now"
     commands:
-      - takeScreenshot: shots/04-prompt
+      - takeScreenshot: shots/05-prompt
       - tapOn: "Not now"
 - extendedWaitUntil:
     visible: "Chats"
     timeout: 90000
-- takeScreenshot: shots/05-home
+- takeScreenshot: shots/06-home
