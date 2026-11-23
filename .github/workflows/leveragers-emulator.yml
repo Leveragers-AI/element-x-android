@@ -16,6 +16,10 @@ on:
         description: Run id of "Agents by Leveragers (APK)" whose APK to test (app = agents)
         type: string
         required: false
+      email:
+        description: Sign-in e-mail of a throwaway test account (default = the TEST_ACCOUNT_EMAIL secret); its password is TEST_ACCOUNT_PASSWORD
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -68,7 +72,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         continue-on-error: true
         env:
-          TEST_EMAIL: ${{ secrets.TEST_ACCOUNT_EMAIL }}
+          TEST_EMAIL: ${{ inputs.email || secrets.TEST_ACCOUNT_EMAIL }}
           TEST_PASSWORD: ${{ secrets.TEST_ACCOUNT_PASSWORD }}
         with:
           api-level: 33

@@ -21,8 +21,12 @@ capture() {
   adb exec-out cat /sdcard/ui.xml | tr '>' '\n' | grep -o 'text="[^"]\+"' | sort -u | head -40
   adb shell dumpsys activity activities | grep -E 'topResumedActivity|ResumedActivity' | head -3
 }
-sleep 60
+sleep 20
+capture 09-after-20s
+sleep 40
 capture 10-after-60s
+sleep 60
+capture 10b-after-120s
 adb shell am force-stop "$PKG"
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 sleep 45
