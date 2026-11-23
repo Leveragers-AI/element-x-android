@@ -83,8 +83,10 @@ private fun Throwable.getReason(): String? {
             }
         }
         is PusherRegistrationFailure.AccountNotVerified -> null
-        is PusherRegistrationFailure.NoDistributorsAvailable -> "No distributors available"
-        is PusherRegistrationFailure.NoProvidersAvailable -> "No providers available"
+        // Leveragers: this build ships without push for now (no Firebase, UnifiedPush only with a distributor app), so a
+        // missing distributor or provider is the expected state, not an error to show at every sign-in.
+        is PusherRegistrationFailure.NoDistributorsAvailable -> null
+        is PusherRegistrationFailure.NoProvidersAvailable -> null
         else -> "Other error: $message"
     }
 }
