@@ -1,0 +1,39 @@
+# Leveragers: our e-mail-first page on chat.leveragers.com, in the Chrome tab opened by the app, then the
+# "Presque terminé" page that hands the sign-in back to the app.
+appId: ${APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "email"
+    timeout: 60000
+- takeScreenshot: shots/02-email-page
+- tapOn:
+    id: "email"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    id: "submit"
+- extendedWaitUntil:
+    visible:
+      id: "password"
+    timeout: 30000
+- tapOn:
+    id: "password"
+- inputText: ${TEST_PASSWORD}
+# First sign-in of the account: the page asks to confirm the new password.
+- runFlow:
+    when:
+      visible:
+        id: "confirm"
+    commands:
+      - tapOn:
+          id: "confirm"
+      - inputText: ${TEST_PASSWORD}
+- hideKeyboard
+- takeScreenshot: shots/03-password
+- tapOn:
+    id: "submit"
+- extendedWaitUntil:
+    visible: "Ouvrir Element"
+    timeout: 60000
+- takeScreenshot: shots/04-almost-there
+- tapOn: "Ouvrir Element"

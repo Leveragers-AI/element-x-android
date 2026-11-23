@@ -123,7 +123,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           disk-size: 3G
-          script: .maestro-leveragers/run.sh apks/app-gplay-x86_64-release.apk
+          script: .maestro-leveragers/run.sh apks/app-gplay-x86_64-release.apk .maestro-leveragers/signin.yaml com.leveragers.agents
       # Screenshots only: Maestro's own log records the typed text (the test password), and artifacts of a public
       # repository can be downloaded by anyone signed in to GitHub. Its tail goes to the job log, where secrets are masked.
       - name: Upload screenshots
@@ -133,7 +133,6 @@ jobs:
           name: emulator-signin
           path: |
             shots/**
-            .maestro-leveragers/shots/**
             ~/.maestro/tests/**/*.png
           retention-days: 30
           if-no-files-found: warn

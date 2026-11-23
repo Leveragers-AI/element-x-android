@@ -1,4 +1,5 @@
-# Leveragers: sign in to chat.leveragers.com with the throwaway test account, through our e-mail-first page.
+# Leveragers: sign in to chat.leveragers.com with the throwaway test account (Agents app). What the app shows
+# afterwards is captured by run.sh (screenshots and visible texts), before and after a relaunch.
 appId: com.leveragers.agents
 ---
 - launchApp:
@@ -10,51 +11,7 @@ appId: com.leveragers.agents
     timeout: 60000
 - takeScreenshot: shots/01-start
 - tapOn: "Sign in to chat.leveragers.com"
-# Chrome custom tab: our e-mail-first page.
-- extendedWaitUntil:
-    visible:
-      id: "email"
-    timeout: 60000
-- takeScreenshot: shots/02-email-page
-- tapOn:
-    id: "email"
-- inputText: ${TEST_EMAIL}
-- tapOn:
-    id: "submit"
-- extendedWaitUntil:
-    visible:
-      id: "password"
-    timeout: 30000
-- tapOn:
-    id: "password"
-- inputText: ${TEST_PASSWORD}
-# First sign-in of the account: the page asks to confirm the new password.
 - runFlow:
-    when:
-      visible:
-        id: "confirm"
-    commands:
-      - tapOn:
-          id: "confirm"
-      - inputText: ${TEST_PASSWORD}
-- hideKeyboard
-- takeScreenshot: shots/03-password
-- tapOn:
-    id: "submit"
-# Tuwunel's "Almost there" page (our skin): a tap hands the sign-in back to the app.
-- extendedWaitUntil:
-    visible: "Ouvrir Element"
-    timeout: 60000
-- takeScreenshot: shots/04-almost-there
-- tapOn: "Ouvrir Element"
-# Back in the app.
-- runFlow:
-    when:
-      visible: "Not now"
-    commands:
-      - takeScreenshot: shots/05-prompt
-      - tapOn: "Not now"
-- extendedWaitUntil:
-    visible: "Chats"
-    timeout: 90000
-- takeScreenshot: shots/06-home
+    file: web-signin.yaml
+    env:
+      APP_ID: com.leveragers.agents

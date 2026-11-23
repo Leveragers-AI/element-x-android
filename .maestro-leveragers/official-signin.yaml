@@ -1,0 +1,28 @@
+# Leveragers: control run with Element's own Element X (official release APK), same server and account, to tell
+# our fork's behaviour apart from Element X's own.
+appId: io.element.android.x
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Sign in manually"
+    timeout: 60000
+- takeScreenshot: shots/01-start
+- tapOn: "Sign in manually"
+- extendedWaitUntil:
+    visible:
+      id: "change_server-server"
+    timeout: 30000
+- tapOn:
+    id: "change_server-server"
+- eraseText: 40
+- inputText: "chat.leveragers.com"
+- hideKeyboard
+- tapOn:
+    id: "login-continue"
+- runFlow:
+    file: web-signin.yaml
+    env:
+      APP_ID: io.element.android.x
