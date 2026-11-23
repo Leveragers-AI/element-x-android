@@ -15,8 +15,3 @@ appId: com.leveragers.agents
     file: web-signin.yaml
     env:
       APP_ID: com.leveragers.agents
-# Signed in: the room list, or the identity confirmation when the account already has another device.
-- extendedWaitUntil:
-    visible: "Chats|Confirm your digital identity"
-    timeout: 90000
-- takeScreenshot: shots/05-signed-in

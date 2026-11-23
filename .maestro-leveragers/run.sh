@@ -14,6 +14,12 @@ mkdir -p shots ~/.maestro/tests
 ~/.maestro/bin/maestro test -e TEST_EMAIL="$TEST_EMAIL" -e TEST_PASSWORD="$TEST_PASSWORD" "$FLOW"
 STATUS=$?
 echo "maestro status: $STATUS"
+# Is the app signed in? Polled right away (POLL_NOW=1, as a user staring at the screen would not) or after 20 s.
+[ "${POLL_NOW:-0}" = "1" ] || sleep 20
+~/.maestro/bin/maestro test -e APP_ID="$PKG" .maestro-leveragers/assert-signed-in.yaml
+SIGNED_IN=$?
+echo "signed-in check (POLL_NOW=${POLL_NOW:-0}): $SIGNED_IN"
+[ "$STATUS" = "0" ] && STATUS=$SIGNED_IN
 capture() {
   adb exec-out screencap -p > "shots/$1.png"
   adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1

@@ -1,0 +1,8 @@
+# Leveragers: signed in = the room list, or the identity confirmation when the account already has another device.
+# Run by run.sh after the sign-in flow (right away, or after a pause: see POLL_NOW).
+appId: ${APP_ID}
+---
+- extendedWaitUntil:
+    visible: "Chats|Confirm your digital identity|Help improve Element X"
+    timeout: 90000
+- takeScreenshot: shots/05-signed-in

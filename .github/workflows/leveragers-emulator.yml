@@ -16,6 +16,10 @@ on:
         description: Run id of "Agents by Leveragers (APK)" whose APK to test (app = agents)
         type: string
         required: false
+      poll_now:
+        description: Check the signed-in screen right after the hand-back tap (else after 20 s)
+        type: boolean
+        default: false
       email:
         description: Sign-in e-mail of a throwaway test account (default = the TEST_ACCOUNT_EMAIL secret); its password is TEST_ACCOUNT_PASSWORD
         type: string
@@ -72,6 +76,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         continue-on-error: true
         env:
+          POLL_NOW: ${{ inputs.poll_now && '1' || '0' }}
           TEST_EMAIL: ${{ inputs.email || secrets.TEST_ACCOUNT_EMAIL }}
           TEST_PASSWORD: ${{ secrets.TEST_ACCOUNT_PASSWORD }}
         with:
@@ -87,7 +92,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: emulator-signin-${{ inputs.app }}
+          name: emulator-signin-${{ inputs.app }}-poll${{ inputs.poll_now && '1' || '0' }}
           path: |
             shots/**
             ~/.maestro/tests/**/*.png
