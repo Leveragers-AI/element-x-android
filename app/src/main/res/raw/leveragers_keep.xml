@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Leveragers: the start screen logo is looked up by name (DefaultOnBoardingLogoResIdProvider), keep it if resources get shrunk. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/onboarding_logo" />
