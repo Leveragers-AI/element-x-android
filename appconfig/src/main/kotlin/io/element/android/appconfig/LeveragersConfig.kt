@@ -70,6 +70,12 @@ object LeveragersConfig {
     const val USES_LIGHT_THEME_ONLY = true
 
     /**
+     * Whether the app uses the palette of our Element Web theme (LeveragersColors): cream background, navy ink instead
+     * of Element's green, warm grey secondary text, softer message bubbles. Applied to the light theme only.
+     */
+    const val HAS_LEVERAGERS_PALETTE = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.

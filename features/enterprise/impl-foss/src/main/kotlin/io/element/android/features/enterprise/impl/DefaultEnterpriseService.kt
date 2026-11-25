@@ -11,6 +11,8 @@ package io.element.android.features.enterprise.impl
 import androidx.compose.ui.graphics.Color
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.appconfig.LeveragersConfig
+import io.element.android.compound.colors.LeveragersColors
 import io.element.android.compound.colors.SemanticColorsLightDark
 import io.element.android.features.enterprise.api.BugReportUrl
 import io.element.android.features.enterprise.api.EnterpriseService
@@ -67,7 +69,7 @@ class DefaultEnterpriseService(
     }
 
     override fun semanticColorsFlow(sessionId: SessionId?): Flow<SemanticColorsLightDark> {
-        return flowOf(SemanticColorsLightDark.default)
+        return flowOf(LEVERAGERS_SEMANTIC_COLORS)
     }
 
     override fun firebasePushGateway(): String? = null
@@ -79,6 +81,15 @@ class DefaultEnterpriseService(
     }
 
     override fun getNoisyNotificationChannelId(sessionId: SessionId): String? = null
+}
+
+/**
+ * Leveragers: the palette of our Element Web theme, in the light theme (the app always uses it).
+ */
+internal val LEVERAGERS_SEMANTIC_COLORS = if (LeveragersConfig.HAS_LEVERAGERS_PALETTE) {
+    SemanticColorsLightDark.default.copy(light = LeveragersColors.light)
+} else {
+    SemanticColorsLightDark.default
 }
 
 /**

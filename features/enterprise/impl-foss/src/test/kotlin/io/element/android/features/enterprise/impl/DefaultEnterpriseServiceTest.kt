@@ -10,7 +10,6 @@ package io.element.android.features.enterprise.impl
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import io.element.android.compound.colors.SemanticColorsLightDark
 import io.element.android.features.enterprise.api.BugReportUrl
 import io.element.android.libraries.androidutils.json.JsonProvider
 import io.element.android.libraries.core.uri.ensureProtocol
@@ -55,11 +54,11 @@ class DefaultEnterpriseServiceTest {
     }
 
     @Test
-    fun `semanticColorsFlow always emits the same value`() = runTest {
+    fun `semanticColorsFlow always emits the Leveragers palette`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
         defaultEnterpriseService.semanticColorsFlow(null).test {
             val initialState = awaitItem()
-            assertThat(initialState).isEqualTo(SemanticColorsLightDark.default)
+            assertThat(initialState).isEqualTo(LEVERAGERS_SEMANTIC_COLORS)
             awaitComplete()
         }
     }
@@ -75,11 +74,11 @@ class DefaultEnterpriseServiceTest {
     }
 
     @Test
-    fun `semanticColorsFlow always emits the same value for a session`() = runTest {
+    fun `semanticColorsFlow always emits the Leveragers palette for a session`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
         defaultEnterpriseService.semanticColorsFlow(A_SESSION_ID).test {
             val initialState = awaitItem()
-            assertThat(initialState).isEqualTo(SemanticColorsLightDark.default)
+            assertThat(initialState).isEqualTo(LEVERAGERS_SEMANTIC_COLORS)
             awaitComplete()
         }
     }
