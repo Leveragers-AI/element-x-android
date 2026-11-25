@@ -16,6 +16,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.theme.Theme
 import io.element.android.compound.theme.mapToTheme
@@ -64,9 +65,11 @@ fun ElementThemeApp(
     val isBlackThemeAllowed by remember {
         featureFlagService.isFeatureEnabledFlow(FeatureFlags.AllowBlackTheme)
     }.collectAsState(initial = false)
-    val theme by remember(isBlackThemeAllowed) {
+    val storedTheme by remember(isBlackThemeAllowed) {
         appPreferencesStore.getThemeFlow().mapToTheme(allowBlackTheme = isBlackThemeAllowed)
     }.collectAsState(initial = Theme.System)
+    // Leveragers: always light, as our web app; a theme chosen before is no longer applied.
+    val theme = if (LeveragersConfig.USES_LIGHT_THEME_ONLY) Theme.Light else storedTheme
     LaunchedEffect(theme) {
         AppCompatDelegate.setDefaultNightMode(
             when (theme) {

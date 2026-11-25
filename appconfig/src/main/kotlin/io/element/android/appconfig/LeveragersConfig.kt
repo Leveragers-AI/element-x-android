@@ -57,10 +57,17 @@ object LeveragersConfig {
     const val SHOWS_MEDIA_CAPTION_WARNING = false
 
     /**
-     * Whether the settings are simplified: no user status under the profile, no Labs, no developer options (which
-     * Element turns on by default outside release builds, and unlocks with seven taps on the version number).
+     * Whether the settings are simplified: no user status under the profile, no "Media upload quality" (the default
+     * quality is kept), no Labs, no developer options (which Element turns on by default outside release builds, and
+     * unlocks with seven taps on the version number).
      */
     const val HAS_SIMPLIFIED_SETTINGS = true
+
+    /**
+     * Whether the app always uses the light theme, as our web app. When true, the "Appearance" setting is hidden and a
+     * theme chosen before is no longer applied.
+     */
+    const val USES_LIGHT_THEME_ONLY = true
 
     /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).

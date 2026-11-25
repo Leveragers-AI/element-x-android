@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.preferences.impl.R
@@ -217,21 +218,27 @@ private fun AppSettingsSection(
     PreferenceCategory(
         title = stringResource(CommonStrings.common_app_settings),
     ) {
-        PreferenceDropdown(
-            icon = CompoundIcons.DarkMode(),
-            dropDownIcon = CompoundIcons.ChevronUpDown(),
-            title = stringResource(id = CommonStrings.common_appearance),
-            selectedOption = state.theme,
-            options = state.availableThemeOptions,
-            onSelectOption = { themeOption ->
-                state.eventSink(PreferencesRootEvent.SetTheme(themeOption))
-            }
-        )
-        ListItem(
-            content = { Text(stringResource(id = CommonStrings.common_media_upload_quality)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Image())),
-            onClick = onOpenMediaSettings,
-        )
+        // Leveragers: the app always uses the light theme.
+        if (!LeveragersConfig.USES_LIGHT_THEME_ONLY) {
+            PreferenceDropdown(
+                icon = CompoundIcons.DarkMode(),
+                dropDownIcon = CompoundIcons.ChevronUpDown(),
+                title = stringResource(id = CommonStrings.common_appearance),
+                selectedOption = state.theme,
+                options = state.availableThemeOptions,
+                onSelectOption = { themeOption ->
+                    state.eventSink(PreferencesRootEvent.SetTheme(themeOption))
+                }
+            )
+        }
+        // Leveragers: the default media upload quality is kept.
+        if (!LeveragersConfig.HAS_SIMPLIFIED_SETTINGS) {
+            ListItem(
+                content = { Text(stringResource(id = CommonStrings.common_media_upload_quality)) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Image())),
+                onClick = onOpenMediaSettings,
+            )
+        }
         ListItem(
             content = { Text(stringResource(id = CommonStrings.common_screen_lock)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),

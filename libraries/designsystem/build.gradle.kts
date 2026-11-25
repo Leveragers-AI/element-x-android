@@ -28,6 +28,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.appconfig)
     api(projects.libraries.compound)
 
     implementation(libs.androidx.compose.material3.windowsizeclass)

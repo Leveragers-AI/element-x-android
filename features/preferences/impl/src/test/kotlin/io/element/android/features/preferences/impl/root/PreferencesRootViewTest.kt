@@ -18,6 +18,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.preferences.impl.R
 import io.element.android.libraries.emoji.api.picker.NoOpEmojiPickerRenderer
 import io.element.android.libraries.matrix.api.core.SessionId
@@ -37,6 +38,7 @@ import io.element.android.tests.testutils.ensureCalledOnceWithParam
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import kotlinx.collections.immutable.toImmutableList
+import org.junit.Assume.assumeFalse
 import org.junit.Test
 
 class PreferencesRootViewTest : RobolectricTest() {
@@ -214,6 +216,7 @@ class PreferencesRootViewTest : RobolectricTest() {
 
     @Test
     fun `clicking on another theme emits the expected event`() = runAndroidComposeUiTest {
+        assumeFalse(LeveragersConfig.USES_LIGHT_THEME_ONLY)
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>()
         setView(
             aPreferencesRootState(
@@ -228,6 +231,7 @@ class PreferencesRootViewTest : RobolectricTest() {
 
     @Test
     fun `black theme is shown when available`() = runAndroidComposeUiTest {
+        assumeFalse(LeveragersConfig.USES_LIGHT_THEME_ONLY)
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         setView(
             aPreferencesRootState(
@@ -242,6 +246,7 @@ class PreferencesRootViewTest : RobolectricTest() {
 
     @Test
     fun `black theme is hidden when unavailable`() = runAndroidComposeUiTest {
+        assumeFalse(LeveragersConfig.USES_LIGHT_THEME_ONLY)
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         setView(
             aPreferencesRootState(
@@ -256,6 +261,7 @@ class PreferencesRootViewTest : RobolectricTest() {
 
     @Test
     fun `click on Media upload quality invokes the expected callback`() = runAndroidComposeUiTest {
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         ensureCalledOnce { callback ->
             setView(
