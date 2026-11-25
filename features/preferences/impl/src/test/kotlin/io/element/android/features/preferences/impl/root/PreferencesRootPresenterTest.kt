@@ -12,6 +12,7 @@ package io.element.android.features.preferences.impl.root
 
 import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.Theme
 import io.element.android.features.location.api.LocationService
 import io.element.android.features.location.test.FakeLocationService
@@ -52,6 +53,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.Assume.assumeFalse
 import org.junit.Rule
 import org.junit.Test
 
@@ -81,11 +83,11 @@ class PreferencesRootPresenterTest {
             assertThat(loadedState.availableThemeOptions).isEqualTo(
                 listOf(ThemeOption.System, ThemeOption.Light, ThemeOption.Dark).toImmutableList()
             )
-            assertThat(loadedState.userStatusState).isNotNull()
+            assertThat(loadedState.userStatusState != null).isEqualTo(!LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
             assertThat(loadedState.showAnalyticsSettings).isFalse()
-            assertThat(loadedState.showDeveloperSettings).isTrue()
+            assertThat(loadedState.showDeveloperSettings).isEqualTo(!LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
             assertThat(loadedState.showLabsItem).isFalse()
-            assertThat(loadedState.showLocationSettings).isTrue()
+            assertThat(loadedState.showLocationSettings).isEqualTo(LeveragersConfig.CAN_SHARE_LOCATION)
             assertThat(loadedState.snackbarMessage).isNull()
         }
     }
@@ -172,6 +174,7 @@ class PreferencesRootPresenterTest {
 
     @Test
     fun `present - developer settings can be enabled in release builds`() = runTest {
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
         createPreferencesRootPresenter(
             showDeveloperSettingsProvider = ShowDeveloperSettingsProvider(aBuildMeta(BuildType.RELEASE))
         ).test {
@@ -186,6 +189,7 @@ class PreferencesRootPresenterTest {
 
     @Test
     fun `present - labs can be shown if any feature flag is in labs and not finished`() = runTest {
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
         createPreferencesRootPresenter(
             featureFlagService = FakeFeatureFlagService(
                 getAvailableFeaturesResult = { _, _ ->

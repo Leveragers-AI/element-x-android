@@ -55,4 +55,17 @@ object LeveragersConfig {
      * Both our web and mobile apps show captions.
      */
     const val SHOWS_MEDIA_CAPTION_WARNING = false
+
+    /**
+     * Whether the settings are simplified: no user status under the profile, no Labs, no developer options (which
+     * Element turns on by default outside release builds, and unlocks with seven taps on the version number).
+     */
+    const val HAS_SIMPLIFIED_SETTINGS = true
+
+    /**
+     * Whether the user can share their location (composer menu, "Location sharing" in the settings).
+     * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
+     * refuses any access to the location.
+     */
+    const val CAN_SHARE_LOCATION = false
 }

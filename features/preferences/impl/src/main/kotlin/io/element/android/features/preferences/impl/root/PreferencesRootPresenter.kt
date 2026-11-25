@@ -17,6 +17,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import dev.zacsweers.metro.Inject
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.Theme
 import io.element.android.compound.theme.mapToTheme
 import io.element.android.features.location.api.LocationService
@@ -87,7 +88,8 @@ class PreferencesRootPresenter(
         val isUserStatusSupported by produceState(false) {
             value = matrixClient.isUserStatusSupported().getOrDefault(false)
         }
-        val userStatusState = if (isUserStatusSupported) userStatusPresenter.present() else null
+        // Leveragers: no user status in the simplified settings.
+        val userStatusState = if (isUserStatusSupported && !LeveragersConfig.HAS_SIMPLIFIED_SETTINGS) userStatusPresenter.present() else null
         val isBlackThemeAllowed by remember {
             featureFlagService.isFeatureEnabledFlow(FeatureFlags.AllowBlackTheme)
         }.collectAsState(initial = false)
@@ -131,7 +133,10 @@ class PreferencesRootPresenter(
         val snackbarMessage by snackbarDispatcher.collectSnackbarMessageAsState()
         val hasAnalyticsProviders = remember { analyticsService.getAvailableAnalyticsProviders().isNotEmpty() }
 
-        val showLabsItem = remember { featureFlagService.getAvailableFeatures(isInLabs = true).isNotEmpty() }
+        // Leveragers: no Labs in the simplified settings.
+        val showLabsItem = remember {
+            !LeveragersConfig.HAS_SIMPLIFIED_SETTINGS && featureFlagService.getAvailableFeatures(isInLabs = true).isNotEmpty()
+        }
 
         val showDeveloperSettings by showDeveloperSettingsProvider.showDeveloperSettings.collectAsState()
 
@@ -169,7 +174,8 @@ class PreferencesRootPresenter(
             showAnalyticsSettings = hasAnalyticsProviders,
             showDeveloperSettings = showDeveloperSettings,
             showLabsItem = showLabsItem,
-            showLocationSettings = isLocationServiceAvailable,
+            // Leveragers: no location sharing.
+            showLocationSettings = LeveragersConfig.CAN_SHARE_LOCATION && isLocationServiceAvailable,
             snackbarMessage = snackbarMessage,
             eventSink = ::handleEvent,
         )

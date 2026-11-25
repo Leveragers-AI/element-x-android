@@ -21,6 +21,7 @@ des suppressions, comme `AppSettings` sur iOS : le code reste en place et les re
 | Inviter depuis un message privé | « Inviter des personnes » retiré des détails d'une conversation privée (elle deviendrait un groupe avec l'agent ; le Web ne le propose pas) ; les salons gardent « Inviter », selon les niveaux de pouvoir ; interrupteur `LeveragersConfig.ALLOWS_INVITING_FROM_DIRECT_MESSAGES` | `features/roomdetails/impl/.../RoomDetailsView.kt` (+ test) |
 | Partage des salons | « Partager » retiré des détails d'un salon et du menu d'un espace (nos salons ne s'ouvrent que depuis nos apps) ; interrupteur `LeveragersConfig.ALLOWS_SHARING_ROOMS` | `features/roomdetails/impl/.../RoomDetailsView.kt` (+ test), `features/space/impl/.../root/SpaceView.kt`, `features/space/impl/build.gradle.kts` |
 | Légendes des médias | Plus d'avertissement « les légendes peuvent ne pas s'afficher dans d'anciennes apps » (nos apps web et mobiles les affichent) ; interrupteur `LeveragersConfig.SHOWS_MEDIA_CAPTION_WARNING` | `libraries/textcomposer/impl/.../model/MessageComposerMode.kt`, `libraries/textcomposer/impl/build.gradle.kts` |
+| Réglages simplifiés, sans position | Réglages sans statut sous le profil, ni Labs, ni options développeur (plus actives hors `release`, ni débloquées par sept tapes sur la version) : `LeveragersConfig.HAS_SIMPLIFIED_SETTINGS`. Pas de partage de position (menu de la barre de rédaction, réglage « Partage de position ») : `CAN_SHARE_LOCATION` ; permissions de position retirées du manifeste, Android refuse tout accès | `features/preferences/impl/.../root/PreferencesRootPresenter.kt`, `features/preferences/impl/.../utils/ShowDeveloperSettingsProvider.kt`, `features/messages/impl/.../messagecomposer/MessageComposerPresenter.kt` (+ tests), `app/src/main/AndroidManifest.xml` |
 
 Restent, comme la politique de marque d'Element l'autorise : les mentions des vrais produits Element (par exemple
 « Ask if the caller can use the new Element X app » pour un ancien appel) et les mentions de droits d'auteur et de
@@ -50,5 +51,6 @@ Numéros de version : ceux d'Element pour l'instant (à revoir avant une deuxiè
 - Push (Firebase à nous + passerelle Sygnal commune avec iOS).
 - Filtres de liens d'Element restés dans le manifeste (`app.element.io`, `mobile.element.io`, `element://`,
   `elementx://`) : sans vérification possible pour notre identifiant, Android peut proposer un choix d'app.
-- Permissions liées aux fonctions coupées (appels plein écran, installation d'APK, position) : à retirer avant le
-  Play Store, pour éviter les déclarations correspondantes.
+- Permissions liées aux fonctions coupées (appels plein écran, installation d'APK) : à retirer avant le Play Store,
+  pour éviter les déclarations correspondantes. Celles de la position sont déjà retirées ; le service de partage de
+  position en direct reste déclaré (jamais lancé).

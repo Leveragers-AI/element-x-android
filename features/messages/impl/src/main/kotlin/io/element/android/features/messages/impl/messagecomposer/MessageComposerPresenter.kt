@@ -31,6 +31,7 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.Composer
 import im.vector.app.features.analytics.plan.Interaction
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.contentscanner.api.ContentScannerService
 import io.element.android.features.location.api.LocationService
 import io.element.android.features.messages.api.timeline.TextPillificator
@@ -186,7 +187,9 @@ class MessageComposerPresenter(
 
         val cameraPermissionState = cameraPermissionPresenter.present()
 
-        val canShareLocation by remember { locationService.isServiceAvailable() }.collectAsState()
+        val isLocationServiceAvailable by remember { locationService.isServiceAvailable() }.collectAsState()
+        // Leveragers: no location sharing.
+        val canShareLocation = LeveragersConfig.CAN_SHARE_LOCATION && isLocationServiceAvailable
 
         val isSendGalleryMessagesEnabled by featureFlagService.isFeatureEnabledFlow(FeatureFlags.SendGalleryMessages)
             .collectAsState(initial = false)

@@ -9,6 +9,7 @@
 package io.element.android.features.preferences.impl.utils
 
 import dev.zacsweers.metro.Inject
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.ui.utils.MultipleTapToUnlock
@@ -25,13 +26,15 @@ class ShowDeveloperSettingsProvider(
     }
 
     private val multipleTapToUnlock = MultipleTapToUnlock(DEVELOPER_SETTINGS_COUNTER)
-    private val isDeveloperBuild = buildMeta.buildType != BuildType.RELEASE
+
+    // Leveragers: no developer options in the simplified settings, whatever the build type.
+    private val isDeveloperBuild = buildMeta.buildType != BuildType.RELEASE && !LeveragersConfig.HAS_SIMPLIFIED_SETTINGS
 
     private val _showDeveloperSettings = MutableStateFlow(isDeveloperBuild)
     val showDeveloperSettings: StateFlow<Boolean> = _showDeveloperSettings
 
     fun unlockDeveloperSettings(scope: CoroutineScope) {
-        if (multipleTapToUnlock.unlock(scope)) {
+        if (multipleTapToUnlock.unlock(scope) && !LeveragersConfig.HAS_SIMPLIFIED_SETTINGS) {
             _showDeveloperSettings.value = true
         }
     }

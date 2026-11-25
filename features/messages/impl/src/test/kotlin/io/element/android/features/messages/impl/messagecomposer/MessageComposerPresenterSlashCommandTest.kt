@@ -12,6 +12,7 @@ package io.element.android.features.messages.impl.messagecomposer
 import android.net.Uri
 import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.location.api.LocationService
 import io.element.android.features.location.test.FakeLocationService
 import io.element.android.features.messages.api.timeline.TextPillificator
@@ -97,7 +98,7 @@ class MessageComposerPresenterSlashCommandTest {
             assertThat(initialState.textEditorState.messageHtml()).isEmpty()
             assertThat(initialState.mode).isEqualTo(MessageComposerMode.Normal)
             assertThat(initialState.showAttachmentSourcePicker).isFalse()
-            assertThat(initialState.canShareLocation).isTrue()
+            assertThat(initialState.canShareLocation).isEqualTo(LeveragersConfig.CAN_SHARE_LOCATION)
         }
     }
 

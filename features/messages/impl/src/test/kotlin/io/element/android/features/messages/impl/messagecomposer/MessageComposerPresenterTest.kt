@@ -19,6 +19,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import im.vector.app.features.analytics.plan.Composer
 import im.vector.app.features.analytics.plan.Interaction
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.location.api.LocationService
 import io.element.android.features.location.test.FakeLocationService
 import io.element.android.features.messages.api.timeline.TextPillificator
@@ -151,7 +152,7 @@ class MessageComposerPresenterTest : RobolectricTest() {
             assertThat(initialState.mode).isEqualTo(MessageComposerMode.Normal)
             assertThat(initialState.isInThreadTimeline).isFalse()
             assertThat(initialState.showAttachmentSourcePicker).isFalse()
-            assertThat(initialState.canShareLocation).isTrue()
+            assertThat(initialState.canShareLocation).isEqualTo(LeveragersConfig.CAN_SHARE_LOCATION)
             assertThat(initialState.slashCommandAction).isEqualTo(AsyncAction.Uninitialized)
         }
     }
