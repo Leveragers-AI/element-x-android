@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import im.vector.app.features.analytics.plan.Interaction
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.roomcall.api.hasPermissionToJoin
@@ -246,9 +247,12 @@ fun RoomDetailsView(
                     pinnedMessagesCount = state.pinnedMessagesCount,
                     onPinnedMessagesClick = onPinnedMessagesClick
                 )
-                PollsItem(
-                    openPollHistory = openPollHistory
-                )
+                // Leveragers: no poll creation, so no poll history entry either.
+                if (LeveragersConfig.CAN_CREATE_POLLS) {
+                    PollsItem(
+                        openPollHistory = openPollHistory
+                    )
+                }
             }
             when (state.roomType) {
                 is RoomDetailsType.Room -> {

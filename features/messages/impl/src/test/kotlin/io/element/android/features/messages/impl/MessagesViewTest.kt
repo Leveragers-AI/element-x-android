@@ -29,6 +29,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import androidx.compose.ui.text.AnnotatedString
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.emojibasebindings.Emoji
 import io.element.android.emojibasebindings.EmojibaseCategory
 import io.element.android.features.messages.impl.actionlist.ActionListEvent
@@ -86,6 +87,7 @@ import io.element.android.tests.testutils.robolectric.RobolectricTest
 import io.element.android.tests.testutils.setSafeContent
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.robolectric.annotation.Config
 import kotlin.time.Duration.Companion.milliseconds
@@ -347,6 +349,7 @@ class MessagesViewTest : RobolectricTest() {
 
     @Test
     fun `clicking on create poll invoke expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.CAN_CREATE_POLLS)
         val eventsRecorder = EventsRecorder<MessagesEvent>(expectEvents = false)
         val state = aMessagesState(
             composerState = aMessageComposerState(

@@ -23,4 +23,10 @@ object LeveragersConfig {
      * Rooms on chat.leveragers.com are joined by invitation or through their space.
      */
     const val CAN_JOIN_ROOM_BY_ADDRESS = false
+
+    /**
+     * Whether polls can be created (composer menu) and their history opened (room details), as on our Element Web
+     * where the poll button is hidden. Polls received from other clients are still shown and can be voted on.
+     */
+    const val CAN_CREATE_POLLS = false
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.roomdetails.impl.members.aRoomMember
 import io.element.android.features.userprofile.shared.aUserProfileState
 import io.element.android.libraries.matrix.api.core.UserId
@@ -37,6 +38,7 @@ import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.ensureCalledOnceWithParam
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.robolectric.annotation.Config
 
@@ -75,6 +77,7 @@ class RoomDetailsViewTest : RobolectricTest() {
     @Config(qualifiers = "h1024dp")
     @Test
     fun `click on polls invokes expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.CAN_CREATE_POLLS)
         ensureCalledOnce { callback ->
             setRoomDetailView(
                 openPollHistory = callback,
