@@ -34,10 +34,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.R
@@ -51,6 +53,7 @@ import io.element.android.libraries.core.extensions.toSafeLength
 import io.element.android.libraries.designsystem.atomic.atoms.UnreadIndicatorAtom
 import io.element.android.libraries.designsystem.atomic.molecules.InviteButtonsRowMolecule
 import io.element.android.libraries.designsystem.components.avatar.Avatar
+import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.modifiers.onKeyboardContextMenuAction
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -67,9 +70,13 @@ import io.element.android.libraries.matrix.ui.components.DisplayNameWithStatus
 import io.element.android.libraries.matrix.ui.components.InviteSenderView
 import io.element.android.libraries.matrix.ui.model.InviteSender
 import io.element.android.libraries.ui.strings.CommonStrings
+import kotlinx.collections.immutable.toImmutableList
 import timber.log.Timber
 
 internal val minHeight = 84.dp
+
+// Leveragers: a 48dp avatar and 12dp above and below.
+private val LIGHT_ROW_MIN_HEIGHT = 72.dp
 
 @Composable
 internal fun RoomSummaryRow(
@@ -130,6 +137,7 @@ internal fun RoomSummaryRow(
                         timestamp = room.timestamp,
                         isHighlighted = room.isHighlighted,
                         dmUserStatus = room.dmUserStatus,
+                        hasNewContent = room.hasNewContent,
                     )
                     MessagePreviewAndIndicatorRow(room = room, showUnreadCount = showUnreadCount, showAllActivity = showAllActivity)
                 }
@@ -192,18 +200,25 @@ private fun RoomSummaryScaffoldRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = minHeight)
+            // Leveragers: the lighter rows have a one-line preview.
+            .heightIn(min = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) LIGHT_ROW_MIN_HEIGHT else minHeight)
             .then(clickModifier)
-            .padding(horizontal = 16.dp, vertical = 11.dp)
+            .padding(horizontal = 16.dp, vertical = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) 12.dp else 11.dp)
             .height(IntrinsicSize.Min),
     ) {
         Avatar(
-            avatarData = room.avatarData,
+            // Leveragers: smaller avatars in the lighter rows.
+            avatarData = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) room.avatarData.copy(size = AvatarSize.LeveragersRoomListItem) else room.avatarData,
             avatarType = if (room.isSpace) {
                 AvatarType.Space(isTombstoned = room.isTombstoned)
             } else {
                 AvatarType.Room(
-                    heroes = room.heroes,
+                    // Leveragers: smaller avatars in the lighter rows (direct messages are drawn from their heroes).
+                    heroes = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) {
+                        room.heroes.map { it.copy(size = AvatarSize.LeveragersRoomListItem) }.toImmutableList()
+                    } else {
+                        room.heroes
+                    },
                     isTombstoned = room.isTombstoned,
                 )
             },
@@ -223,7 +238,8 @@ private fun NameAndTimestampRow(
     timestamp: String?,
     isHighlighted: Boolean,
     dmUserStatus: DisplayedStatus?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hasNewContent: Boolean = false,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -234,18 +250,24 @@ private fun NameAndTimestampRow(
             name = displayName,
             status = dmUserStatus,
             modifier = Modifier.weight(1f),
-            style = ElementTheme.typography.fontBodyLgMedium,
+            // Leveragers: the name in bold only when there is something new.
+            style = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS && hasNewContent) {
+                ElementTheme.typography.fontBodyLgMedium.copy(fontWeight = FontWeight.SemiBold)
+            } else {
+                ElementTheme.typography.fontBodyLgMedium
+            },
             nameColor = ElementTheme.colors.roomListRoomName,
             nameFontStyle = FontStyle.Italic.takeIf { name == null },
         )
         // Timestamp
         Text(
             text = timestamp ?: "",
-            style = ElementTheme.typography.fontBodySmMedium,
-            color = if (isHighlighted) {
-                ElementTheme.colors.textActionAccent
-            } else {
-                ElementTheme.colors.roomListRoomMessageDate
+            // Leveragers: a smaller and paler time.
+            style = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) ElementTheme.typography.fontBodyXsRegular else ElementTheme.typography.fontBodySmMedium,
+            color = when {
+                isHighlighted -> ElementTheme.colors.textActionAccent
+                LeveragersConfig.HAS_LIGHT_ROOM_ROWS -> ElementTheme.colors.iconTertiary
+                else -> ElementTheme.colors.roomListRoomMessageDate
             },
         )
     }
@@ -328,7 +350,11 @@ private fun MessagePreviewAndIndicatorRow(
                     Spacer(modifier = Modifier.width(6.dp))
                 }
                 val messagePreview = room.latestEvent.content()
-                val annotatedMessagePreview = messagePreview as? AnnotatedString ?: AnnotatedString(text = messagePreview.orEmpty().toString())
+                val styledMessagePreview = messagePreview as? AnnotatedString ?: AnnotatedString(text = messagePreview.orEmpty().toString())
+                // Leveragers: a plain preview, without the sender's name in bold.
+                val annotatedMessagePreview = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) AnnotatedString(styledMessagePreview.text) else styledMessagePreview
+                // Leveragers: a one-line preview.
+                val previewLines = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) 1 else 2
                 Text(
                     modifier = Modifier
                         .weight(1f)
@@ -336,8 +362,8 @@ private fun MessagePreviewAndIndicatorRow(
                     text = annotatedMessagePreview,
                     color = ElementTheme.colors.roomListRoomMessage,
                     style = ElementTheme.typography.fontBodyMdRegular,
-                    minLines = 2,
-                    maxLines = 2,
+                    minLines = previewLines,
+                    maxLines = previewLines,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -368,7 +394,11 @@ private fun MessagePreviewAndIndicatorRow(
                 val contentDescription = stringResource(CommonStrings.a11y_notifications_new_messages)
                 UnreadIndicatorAtom(
                     color = tint,
-                    count = room.unreadIndicatorCount(showUnreadCount = showUnreadCount, showAllActivity = showAllActivity),
+                    // Leveragers: a simple dot for unread messages.
+                    count = room.unreadIndicatorCount(
+                        showUnreadCount = showUnreadCount && !LeveragersConfig.HAS_LIGHT_ROOM_ROWS,
+                        showAllActivity = showAllActivity,
+                    ),
                     contentDescription = contentDescription,
                 )
             }

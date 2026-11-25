@@ -89,6 +89,13 @@ object LeveragersConfig {
     const val HAS_WEB_ROOM_LIST_SECTIONS = true
 
     /**
+     * Whether the room rows of the home screen are lighter, as in the iOS app: 48dp avatars, the name in bold only when
+     * there is something new, a one-line preview without the sender's name in bold, a smaller and paler time, and a
+     * simple dot for unread messages.
+     */
+    const val HAS_LIGHT_ROOM_ROWS = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.

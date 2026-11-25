@@ -20,6 +20,9 @@ enum class AvatarSize(val dp: Dp) {
     IncomingCall(140.dp),
     RoomDetailsHeader(96.dp),
     RoomListItem(52.dp),
+
+    // Leveragers: the lighter room rows of the home screen.
+    LeveragersRoomListItem(48.dp),
     SearchRoomListItem(32.dp),
     ThreadsListItem(52.dp),
 
