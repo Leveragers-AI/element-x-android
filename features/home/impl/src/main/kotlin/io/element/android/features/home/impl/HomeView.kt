@@ -298,7 +298,15 @@ private fun HomeScaffold(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .then(
+                        // Leveragers: the scroll behavior only collapses the filters. Without them, its height limit is
+                        // never set and it would consume every scroll of the list.
+                        if (LeveragersConfig.HAS_SIMPLIFIED_HOME_SCREEN) {
+                            Modifier
+                        } else {
+                            Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                        }
+                    )
             ) {
                 when (state.currentHomeNavigationBarItem) {
                     HomeNavigationBarItem.Chats -> {
