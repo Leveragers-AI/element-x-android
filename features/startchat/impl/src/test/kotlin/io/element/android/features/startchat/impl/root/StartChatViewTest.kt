@@ -105,6 +105,7 @@ class StartChatViewTest : RobolectricTest() {
     @Config(qualifiers = "h1024dp")
     @Test
     fun `clicking on Join room by address invokes the expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.CAN_JOIN_ROOM_BY_ADDRESS)
         val eventsRecorder = EventsRecorder<StartChatEvent>(expectEvents = false)
         ensureCalledOnce {
             setStartChatView(

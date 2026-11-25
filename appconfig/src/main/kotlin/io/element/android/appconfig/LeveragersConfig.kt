@@ -17,4 +17,10 @@ object LeveragersConfig {
      * Accounts on chat.leveragers.com are created by Leveragers: the shared link would lead to an app nobody can sign in to.
      */
     const val CAN_INVITE_FRIENDS_TO_APP = false
+
+    /**
+     * Whether "Join room by address" is offered on the "Start chat" screen.
+     * Rooms on chat.leveragers.com are joined by invitation or through their space.
+     */
+    const val CAN_JOIN_ROOM_BY_ADDRESS = false
 }

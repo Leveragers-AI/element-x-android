@@ -191,12 +191,15 @@ private fun CreateRoomActionButtonsList(
                 )
             }
         }
-        item {
-            CreateRoomActionButton(
-                iconRes = CompoundDrawables.ic_compound_room,
-                text = stringResource(R.string.screen_start_chat_join_room_by_address_action),
-                onClick = onJoinByAddressClick,
-            )
+        // Leveragers: rooms are joined by invitation or through their space, not by address.
+        if (LeveragersConfig.CAN_JOIN_ROOM_BY_ADDRESS) {
+            item {
+                CreateRoomActionButton(
+                    iconRes = CompoundDrawables.ic_compound_room,
+                    text = stringResource(R.string.screen_start_chat_join_room_by_address_action),
+                    onClick = onJoinByAddressClick,
+                )
+            }
         }
         if (state.userListState.recentDirectRooms.isNotEmpty()) {
             item {
