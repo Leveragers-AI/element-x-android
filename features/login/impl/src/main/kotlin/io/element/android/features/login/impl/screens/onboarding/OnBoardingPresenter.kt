@@ -9,6 +9,7 @@
 package io.element.android.features.login.impl.screens.onboarding
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +21,7 @@ import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.features.login.impl.accesscontrol.DefaultAccountProviderAccessControl
@@ -132,6 +134,19 @@ class OnBoardingPresenter(
                         }
                     }
                 }
+            }
+        }
+
+        // Leveragers: open the sign-in page by itself, once, when no account is signed in yet.
+        var hasOpenedSignInAutomatically by rememberSaveable { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            if (LeveragersConfig.OPENS_SIGN_IN_AUTOMATICALLY &&
+                !hasOpenedSignInAutomatically &&
+                forcedAccountProvider != null &&
+                sessionStore.numberOfSessions() == 0
+            ) {
+                hasOpenedSignInAutomatically = true
+                handleEvent(OnBoardingEvent.OnSignIn(forcedAccountProvider))
             }
         }
 

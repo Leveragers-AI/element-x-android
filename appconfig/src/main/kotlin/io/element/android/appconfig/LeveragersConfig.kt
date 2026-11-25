@@ -75,4 +75,11 @@ object LeveragersConfig {
      * refuses any access to the location.
      */
     const val CAN_SHARE_LOCATION = false
+
+    /**
+     * Whether the start screen opens the sign-in page of our server by itself, once, as a tap on its button would
+     * (first launch, or after signing out). Not when adding an account. If the page is closed, the start screen and
+     * its button stay there to try again.
+     */
+    const val OPENS_SIGN_IN_AUTOMATICALLY = true
 }
