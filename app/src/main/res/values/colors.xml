@@ -9,5 +9,6 @@
     <!-- Must be equal to DarkColorTokens.colorThemeBg -->
     <color name="splashscreen_bg_dark">#FF101317</color>
     <!-- Must be equal to LightColorTokens.colorThemeBg -->
-    <color name="splashscreen_bg_light">#FFFFFFFF</color>
+    <!-- Leveragers: cream background of our Element Web theme (LeveragersColors). -->
+    <color name="splashscreen_bg_light">#FFFAF8F4</color>
 </resources>

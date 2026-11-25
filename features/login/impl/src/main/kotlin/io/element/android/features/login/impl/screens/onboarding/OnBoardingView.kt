@@ -9,7 +9,6 @@
 package io.element.android.features.login.impl.screens.onboarding
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,16 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import io.element.android.compound.colors.SemanticColorsLightDark
 import io.element.android.compound.theme.ElementTheme
-import io.element.android.compound.theme.ForcedDarkElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.login.LoginModeEvent
@@ -115,18 +111,6 @@ fun OnBoardingView(
             buttons = buttons,
             onBackClick = onBackClick,
         )
-    } else if (state.onBoardingLogoResId != null) {
-        // Leveragers: the start screen shows our logo on the Leveragers navy, in dark appearance, as in the iOS app.
-        ForcedDarkElementTheme(colors = SemanticColorsLightDark.default) {
-            AddFirstAccountScaffold(
-                modifier = modifier.background(LEVERAGERS_NAVY),
-                state = state,
-                loginView = loginView,
-                buttons = buttons,
-                onBackClick = onBackClick,
-                onDeveloperSettingsClick = onDeveloperSettingsClick,
-            )
-        }
     } else {
         AddFirstAccountScaffold(
             modifier = modifier,
@@ -138,8 +122,6 @@ fun OnBoardingView(
         )
     }
 }
-
-private val LEVERAGERS_NAVY = Color(0xFF0A082B)
 
 @Composable
 private fun AddFirstAccountScaffold(
