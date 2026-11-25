@@ -23,10 +23,10 @@ des suppressions, comme `AppSettings` sur iOS : le code reste en place et les re
 | Légendes des médias | Plus d'avertissement « les légendes peuvent ne pas s'afficher dans d'anciennes apps » (nos apps web et mobiles les affichent) ; interrupteur `LeveragersConfig.SHOWS_MEDIA_CAPTION_WARNING` | `libraries/textcomposer/impl/.../model/MessageComposerMode.kt`, `libraries/textcomposer/impl/build.gradle.kts` |
 | Réglages simplifiés, sans position | Réglages sans statut sous le profil, ni Labs, ni options développeur (plus actives hors `release`, ni débloquées par sept tapes sur la version) : `LeveragersConfig.HAS_SIMPLIFIED_SETTINGS`. Pas de partage de position (menu de la barre de rédaction, réglage « Partage de position ») : `CAN_SHARE_LOCATION` ; permissions de position retirées du manifeste, Android refuse tout accès | `features/preferences/impl/.../root/PreferencesRootPresenter.kt`, `features/preferences/impl/.../utils/ShowDeveloperSettingsProvider.kt`, `features/messages/impl/.../messagecomposer/MessageComposerPresenter.kt` (+ tests), `app/src/main/AndroidManifest.xml` |
 | Mode clair seul | L'app reste en mode clair, comme le Web : « Apparence » retiré des réglages, un thème choisi avant n'est plus appliqué (`LeveragersConfig.USES_LIGHT_THEME_ONLY`) ; « Qualité d'envoi des médias » retiré, la qualité par défaut reste (`HAS_SIMPLIFIED_SETTINGS`) | `features/preferences/impl/.../root/PreferencesRootView.kt` (+ test), `libraries/designsystem/.../theme/ElementThemeApp.kt`, `libraries/designsystem/build.gradle.kts` |
+| Message d'appel | « Agents » à la place d'« Element X » dans le message d'un appel non pris en charge, à l'affichage, dans toutes les langues (sans toucher aux traductions générées par Localazy) | `features/messages/impl/.../timeline/components/event/TimelineItemLegacyCallInviteView.kt` |
 
-Restent, comme la politique de marque d'Element l'autorise : les mentions des vrais produits Element (par exemple
-« Ask if the caller can use the new Element X app » pour un ancien appel) et les mentions de droits d'auteur et de
-licence. Le code est sous AGPL-3.0 (voir `LICENSE`) : ce dépôt public contient la source exacte de chaque version
+Restent, comme la politique de marque d'Element l'autorise : les mentions des vrais produits Element et les mentions
+de droits d'auteur et de licence (le message d'un ancien appel nomme désormais « Agents », comme sur iOS). Le code est sous AGPL-3.0 (voir `LICENSE`) : ce dépôt public contient la source exacte de chaque version
 distribuée.
 
 ## Connexion
