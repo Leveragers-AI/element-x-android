@@ -9,6 +9,7 @@
 package io.element.android.libraries.textcomposer.model
 
 import androidx.compose.runtime.Immutable
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.timeline.item.EventThreadInfo
 import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransactionId
@@ -55,6 +56,8 @@ sealed interface MessageComposerMode {
 }
 
 fun MessageComposerMode.showCaptionCompatibilityWarning(): Boolean {
+    // Leveragers: our web and mobile apps both show captions.
+    if (!LeveragersConfig.SHOWS_MEDIA_CAPTION_WARNING) return false
     return when (this) {
         is MessageComposerMode.Attachment -> true
         is MessageComposerMode.EditCaption -> content.isEmpty()

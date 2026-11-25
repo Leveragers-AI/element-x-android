@@ -49,4 +49,10 @@ object LeveragersConfig {
      * Our rooms only open from our apps: sharing their link makes no sense.
      */
     const val ALLOWS_SHARING_ROOMS = false
+
+    /**
+     * Whether the composer warns that media captions may not show in older apps.
+     * Both our web and mobile apps show captions.
+     */
+    const val SHOWS_MEDIA_CAPTION_WARNING = false
 }
