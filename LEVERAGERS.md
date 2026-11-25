@@ -5,6 +5,9 @@
 étiquette (rebase) : une ligne par patch, avec les fichiers d'Element qu'il touche. Règle : une étiquette publiée
 depuis au moins 14 jours. L'app iOS jumelle est `Leveragers-AI/element-x-ios` (mêmes choix).
 
+Les fonctions d'Element masquées le sont par des interrupteurs de `appconfig/.../LeveragersConfig.kt` plutôt que par
+des suppressions, comme `AppSettings` sur iOS : le code reste en place et les rebases restent simples.
+
 | Patch | But | Fichiers d'Element touchés |
 |---|---|---|
 | Identité | Identifiant `com.leveragers.agents`, nom « Agents » ; retour de connexion `com.leveragers.agents:/` ; `client_uri` `https://leveragers.com`, logo sur agents.leveragers.com, conditions et confidentialité sur www.leveragers.com, copyright = ce dépôt ; Firebase retiré (pas de push pour l'instant ; UnifiedPush reste compilé, inactif sans distributeur) ; statistiques PostHog/Sentry remplacées par le module no-op ; « Agents » à la place d'« Element » pour l'app de bureau et l'app mobile | `plugins/src/main/kotlin/config/BuildTimeConfig.kt`, `plugins/src/main/kotlin/ModulesConfig.kt`, `appconfig/.../ApplicationConfig.kt` |
@@ -12,6 +15,7 @@ depuis au moins 14 jours. L'app iOS jumelle est `Leveragers-AI/element-x-ios` (m
 | Push absent | Pas de fenêtre d'erreur « No distributors available » / « No providers available » à chaque connexion : sans push dans cette version, c'est l'état attendu | `appnav/.../loggedin/LoggedInView.kt` |
 | Marque | Icône adaptative (fond cyan `#2CF8E5`, marque bleu nuit `#0A082B`, monochrome), icônes PNG Android 7 et Play Store ; logo de l'écran d'accueil (`onboarding_logo`, 110 dp) sur fond bleu nuit, apparence sombre ; icône et couleur des notifications | `appicon/element/src/**`, `app/src/main/res/{drawable/onboarding_logo.xml,raw/leveragers_keep.xml}`, `features/login/impl/.../onboarding/OnBoardingView.kt`, `libraries/designsystem/src/main/res/drawable/ic_notification.xml`, `appconfig/.../NotificationConfig.kt` |
 | Construction | Workflows `leveragers-android.yml` (APK signés + connexion sur émulateur avec un compte jetable, Maestro) et `leveragers-emulator.yml` (connexion sur émulateur sans reconstruire, ou témoin avec l'Element X officiel) ; workflows d'Element retirés de la branche ; signature de la version `release` par notre clé quand l'environnement la fournit | `.github/workflows/*`, `app/build.gradle.kts`, `.maestro-leveragers/*` |
+| Inviter sur Agents | « Inviter des personnes sur Agents » retiré de l'écran « Démarrer une discussion » (comptes créés par Leveragers) ; interrupteur `LeveragersConfig.CAN_INVITE_FRIENDS_TO_APP` | `appconfig/.../LeveragersConfig.kt` (nouveau), `features/startchat/impl/build.gradle.kts`, `features/startchat/impl/.../root/StartChatView.kt` (+ test) |
 
 Restent, comme la politique de marque d'Element l'autorise : les mentions des vrais produits Element (par exemple
 « Ask if the caller can use the new Element X app » pour un ancien appel) et les mentions de droits d'auteur et de

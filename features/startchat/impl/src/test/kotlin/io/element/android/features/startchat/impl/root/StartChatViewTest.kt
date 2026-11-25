@@ -16,6 +16,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.startchat.impl.R
 import io.element.android.features.startchat.impl.userlist.aRecentDirectRoomList
 import io.element.android.features.startchat.impl.userlist.aUserListState
@@ -30,6 +31,7 @@ import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.ensureCalledOnceWithParam
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.robolectric.annotation.Config
 
@@ -65,6 +67,7 @@ class StartChatViewTest : RobolectricTest() {
     @Config(qualifiers = "h1024dp")
     @Test
     fun `clicking on Invite people invokes the expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.CAN_INVITE_FRIENDS_TO_APP)
         val eventsRecorder = EventsRecorder<StartChatEvent>(expectEvents = false)
         ensureCalledOnce {
             setStartChatView(

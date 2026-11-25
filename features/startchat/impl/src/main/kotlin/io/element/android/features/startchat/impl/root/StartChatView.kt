@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.startchat.api.ConfirmingStartDmWithMatrixUser
@@ -180,12 +181,15 @@ private fun CreateRoomActionButtonsList(
             )
         }
         // Leveragers: no "Browse all rooms" entry, the chat server has no public rooms.
-        item {
-            CreateRoomActionButton(
-                iconRes = CompoundDrawables.ic_compound_share_android,
-                text = stringResource(id = CommonStrings.action_invite_friends_to_app, state.applicationName),
-                onClick = onInvitePeopleClick,
-            )
+        // Leveragers: accounts are created by Leveragers, no invitation to install the app.
+        if (LeveragersConfig.CAN_INVITE_FRIENDS_TO_APP) {
+            item {
+                CreateRoomActionButton(
+                    iconRes = CompoundDrawables.ic_compound_share_android,
+                    text = stringResource(id = CommonStrings.action_invite_friends_to_app, state.applicationName),
+                    onClick = onInvitePeopleClick,
+                )
+            }
         }
         item {
             CreateRoomActionButton(
