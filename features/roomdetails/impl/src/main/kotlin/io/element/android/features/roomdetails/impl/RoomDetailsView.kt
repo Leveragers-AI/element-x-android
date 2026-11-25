@@ -451,7 +451,8 @@ private fun MainActionsSection(
                 onClick = onInvitePeople,
             )
         }
-        if (state.roomType is RoomDetailsType.Room) {
+        // Leveragers: no room sharing.
+        if (state.roomType is RoomDetailsType.Room && LeveragersConfig.ALLOWS_SHARING_ROOMS) {
             // Share CTA should be hidden for DMs
             MainActionButton(
                 title = stringResource(CommonStrings.action_share),

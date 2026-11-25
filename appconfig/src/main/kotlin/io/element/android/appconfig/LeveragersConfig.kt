@@ -43,4 +43,10 @@ object LeveragersConfig {
      * agent into a group, which the web app does not offer either. Regular rooms keep "Invite", ruled by power levels.
      */
     const val ALLOWS_INVITING_FROM_DIRECT_MESSAGES = false
+
+    /**
+     * Whether rooms and spaces can be shared ("Share" in room details and in the space menu).
+     * Our rooms only open from our apps: sharing their link makes no sense.
+     */
+    const val ALLOWS_SHARING_ROOMS = false
 }

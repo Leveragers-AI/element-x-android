@@ -55,6 +55,7 @@ class RoomDetailsViewTest : RobolectricTest() {
 
     @Test
     fun `click on share invokes expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_SHARING_ROOMS)
         ensureCalledOnce { callback ->
             setRoomDetailView(
                 onShareRoom = callback,

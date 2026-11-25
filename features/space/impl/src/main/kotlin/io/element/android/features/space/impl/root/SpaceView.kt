@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.space.impl.R
@@ -489,14 +490,17 @@ private fun SpaceViewTopBar(
                         onViewMembersClick()
                     }
                 )
-                SpaceMenuItem(
-                    titleRes = CommonStrings.action_share,
-                    icon = CompoundIcons.ShareAndroid(),
-                    onClick = {
-                        showMenu = false
-                        onShareSpace()
-                    }
-                )
+                // Leveragers: no space sharing.
+                if (LeveragersConfig.ALLOWS_SHARING_ROOMS) {
+                    SpaceMenuItem(
+                        titleRes = CommonStrings.action_share,
+                        icon = CompoundIcons.ShareAndroid(),
+                        onClick = {
+                            showMenu = false
+                            onShareSpace()
+                        }
+                    )
+                }
                 if (canAccessSpaceSettings) {
                     SpaceMenuItem(
                         titleRes = CommonStrings.common_settings,
