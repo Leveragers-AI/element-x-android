@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.components.HomeTopBar
@@ -224,13 +225,23 @@ private fun HomeScaffold(
                     onSwitchToAccount(sessionId)
                 },
                 scrollBehavior = scrollBehavior,
-                displayFilters = state.displayRoomListFilters,
+                // Leveragers: no filters on the simplified home screen.
+                displayFilters = state.displayRoomListFilters && !LeveragersConfig.HAS_SIMPLIFIED_HOME_SCREEN,
                 filtersState = roomListState.filtersState,
                 spaceFiltersState = roomListState.spaceFiltersState,
                 canReportBug = state.canReportBug,
             )
         },
         floatingActionButton = {
+            // Leveragers: no Chats and Spaces tabs on the simplified home screen, only the button to start a chat.
+            if (LeveragersConfig.HAS_SIMPLIFIED_HOME_SCREEN) {
+                HomeFloatingActionButton(
+                    onClick = onStartChatClick,
+                    contentDescription = CommonStrings.action_create_room,
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
+                )
+                return@Scaffold
+            }
             val coroutineScope = rememberCoroutineScope()
             HomeBottomBar(
                 // The Scaffold uses top-only insets so the scrollable content can go edge-to-edge behind the
@@ -307,7 +318,10 @@ private fun HomeScaffold(
                                 .padding(outerPadding)
                                 .consumeWindowInsets(outerPadding)
                         )
-                        SpaceFiltersView(roomListState.spaceFiltersState)
+                        // Leveragers: no space filter on the simplified home screen.
+                        if (!LeveragersConfig.HAS_SIMPLIFIED_HOME_SCREEN) {
+                            SpaceFiltersView(roomListState.spaceFiltersState)
+                        }
                     }
                     HomeNavigationBarItem.Spaces -> {
                         HomeSpacesView(

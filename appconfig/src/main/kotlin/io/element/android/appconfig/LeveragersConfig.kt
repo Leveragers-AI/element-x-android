@@ -76,6 +76,12 @@ object LeveragersConfig {
     const val HAS_LEVERAGERS_PALETTE = true
 
     /**
+     * Whether the home screen is simplified: a single list of rooms, without the Chats and Spaces tabs, the filters
+     * (Unread, People, Favourites…) nor the space filter.
+     */
+    const val HAS_SIMPLIFIED_HOME_SCREEN = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.
