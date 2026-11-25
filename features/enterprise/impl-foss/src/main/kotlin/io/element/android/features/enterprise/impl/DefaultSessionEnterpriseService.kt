@@ -16,9 +16,11 @@ import io.element.android.libraries.di.SessionScope
 class DefaultSessionEnterpriseService : SessionEnterpriseService {
     override suspend fun init() = Unit
     override suspend fun tweakMasUrl(url: String): String = url
+
     // Leveragers: calls are off, as on agents.leveragers.com.
     override suspend fun isElementCallAvailable(): Boolean = false
     override suspend fun isEncryptionDisabledByHomeserver(): Boolean = false
+
     // Leveragers: the chat server refuses public rooms.
     override suspend fun arePublicRoomsDisabledByHomeserver(): Boolean = true
 }

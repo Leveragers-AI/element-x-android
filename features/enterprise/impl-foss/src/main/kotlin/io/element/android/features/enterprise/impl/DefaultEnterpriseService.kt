@@ -37,6 +37,7 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
+
     // Leveragers: the app only signs in to our chat server; the start screen then shows a single button.
     override fun accountProviderAllowList(): List<AccountProvider> = listOf(LEVERAGERS_ACCOUNT_PROVIDER)
     override fun canConnectToAnyAccountProvider(): Boolean = false
