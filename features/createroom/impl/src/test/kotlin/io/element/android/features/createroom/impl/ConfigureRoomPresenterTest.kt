@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import app.cash.turbine.TurbineTestContext
 import com.google.common.truth.Truth.assertThat
 import im.vector.app.features.analytics.plan.CreatedRoom
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.createroom.impl.configureroom.ConfigureRoomEvent
 import io.element.android.features.createroom.impl.configureroom.ConfigureRoomPresenter
 import io.element.android.features.createroom.impl.configureroom.ConfigureRoomState
@@ -69,6 +70,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -124,6 +127,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
 
     @Test
     fun `present - state is updated when fields are changed`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val pickerProvider = FakePickerProvider()
         val permissionsPresenter = FakePermissionsPresenter()
         val roomAliasHelper = FakeRoomAliasHelper()
@@ -219,6 +224,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
 
     @Test
     fun `present - when creating a room in a space if the room doesn't receive the power levels value it can't be added to the space`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val addChildToSpaceResult = lambdaRecorder<RoomId, RoomId, Result<Unit>> { _, _ -> Result.success(Unit) }
         val spaceService = FakeSpaceService(
             editableSpacesResult = { Result.success(emptyList()) },
@@ -262,6 +269,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
 
     @Test
     fun `present - creating a room and adding it into a parent space works when all the data is available`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val addChildToSpaceResult = lambdaRecorder<RoomId, RoomId, Result<Unit>> { _, _ -> Result.success(Unit) }
         val spaceService = FakeSpaceService(
             editableSpacesResult = { Result.success(emptyList()) },
@@ -423,6 +432,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `present - address is invalid when format is invalid`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val aliasHelper = FakeRoomAliasHelper(
             isRoomAliasValidLambda = { false }
         )
@@ -445,6 +456,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `present - address is not available when alias is not available`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val fakeMatrixClient = createMatrixClient(isAliasAvailable = false)
         val presenter = createConfigureRoomPresenter(
             matrixClient = fakeMatrixClient,
@@ -465,6 +478,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `present - address is valid when alias is available and format is valid`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val fakeMatrixClient = createMatrixClient(isAliasAvailable = true)
         val presenter = createConfigureRoomPresenter(
             matrixClient = fakeMatrixClient,
@@ -484,6 +499,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
 
     @Test
     fun `present - when a space is selected, the selected join rule is reset to private`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val presenter = createConfigureRoomPresenter()
         presenter.test {
             val initialState = initialState()
@@ -550,6 +567,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
 
     @Test
     fun `present - when public rooms are disabled by the HS, the public join rule is not available`() = runTest {
+        // Leveragers: the access options are not offered in the simplified room creation.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
         val presenter = createConfigureRoomPresenter(
             sessionEnterpriseService = FakeSessionEnterpriseService(
                 isEncryptionDisabledResult = { false },
@@ -577,6 +596,38 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
             val state = consumeItemsUntilPredicate { it.availableJoinRules == listOf(JoinRuleItem.PrivateVisibility.Private) }.last()
             assertThat(state.config.visibilityState).isEqualTo(RoomVisibilityState.Private(JoinRuleItem.PrivateVisibility.Private))
             cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - simplified room creation - the first space is selected and the room is open to its members`() = runTest {
+        assumeTrue(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
+        val space = aSpaceRoom()
+        val matrixClient = createMatrixClient(
+            spaceService = FakeSpaceService(
+                editableSpacesResult = { Result.success(listOf(space, aSpaceRoom(roomId = A_ROOM_ID))) }
+            ),
+        )
+        createConfigureRoomPresenter(matrixClient = matrixClient).test {
+            val state = consumeItemsUntilPredicate {
+                it.config.visibilityState.joinRuleItem == JoinRuleItem.PrivateVisibility.Restricted(space.roomId)
+            }.last()
+            assertThat(state.showsAccessOptions).isFalse()
+            assertThat(state.config.parentSpace).isEqualTo(space)
+            assertThat(state.availableJoinRules).containsExactly(JoinRuleItem.PrivateVisibility.Restricted(space.roomId))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - simplified room creation - without a space the room is invite only`() = runTest {
+        assumeTrue(LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION)
+        createConfigureRoomPresenter().test {
+            val state = initialState()
+            assertThat(state.showsAccessOptions).isFalse()
+            assertThat(state.config.parentSpace).isNull()
+            assertThat(state.availableJoinRules).containsExactly(JoinRuleItem.PrivateVisibility.Private)
+            assertThat(state.config.visibilityState).isEqualTo(RoomVisibilityState.Private(JoinRuleItem.PrivateVisibility.Private))
         }
     }
 

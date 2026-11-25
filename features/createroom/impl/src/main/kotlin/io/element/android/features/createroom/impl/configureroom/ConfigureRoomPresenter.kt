@@ -25,6 +25,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.CreatedRoom
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.enterprise.api.SessionEnterpriseService
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
@@ -85,6 +86,9 @@ class ConfigureRoomPresenter(
     private val cameraPermissionPresenter: PermissionsPresenter = permissionsPresenterFactory.create(android.Manifest.permission.CAMERA)
     private var pendingPermissionRequest = false
 
+    // Leveragers: simplified room creation (not for spaces).
+    private val showsAccessOptions = isSpace || !LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION
+
     @Composable
     override fun present(): ConfigureRoomState {
         val cameraPermissionState = cameraPermissionPresenter.present()
@@ -121,6 +125,8 @@ class ConfigureRoomPresenter(
         LaunchedEffect(Unit) {
             spaces = matrixClient.spaceService.editableSpaces().getOrElse { emptyList() }.toImmutableList()
             val parentSpace = spaces.find { it.roomId == initialParentSpaceId }
+                // Leveragers: the first space is selected by default.
+                ?: spaces.firstOrNull().takeIf { !showsAccessOptions && dataStore.getCreateRoomConfigFlow().value.parentSpace == null }
             parentSpace?.let {
                 dataStore.setParentSpace(parentSpace = parentSpace, updateVisibility = true)
             }
@@ -153,6 +159,10 @@ class ConfigureRoomPresenter(
         val parentSpace = createRoomConfig.parentSpace
         val availableJoinRules = remember(parentSpace, isSpace, isKnockFeatureEnabled, arePublicRoomsDisabled) {
             when {
+                // Leveragers: open to the members of the space, or invite only without one.
+                !showsAccessOptions -> persistentListOf(
+                    parentSpace?.let { JoinRuleItem.PrivateVisibility.Restricted(it.roomId) } ?: JoinRuleItem.PrivateVisibility.Private
+                )
                 isSpace && parentSpace != null -> TODO("Adding a space to a parent space is not supported yet! How did you get here?")
                 parentSpace == null || parentSpace.joinRule == JoinRule.Public -> listOfNotNull(
                     JoinRuleItem.PublicVisibility.Public.takeIf { !arePublicRoomsDisabled },
@@ -177,6 +187,10 @@ class ConfigureRoomPresenter(
                 else -> availableJoinRules.find { it == currentJoinRule }
             }
             when {
+                // Leveragers: the only join rule on offer is the one used.
+                !showsAccessOptions -> if (currentJoinRule != availableJoinRules.single()) {
+                    dataStore.setJoinRule(availableJoinRules.single())
+                }
                 matchingRule == null -> {
                     // No matching type fallback to Private (always available)
                     dataStore.setJoinRule(JoinRuleItem.PrivateVisibility.Private)
@@ -231,6 +245,7 @@ class ConfigureRoomPresenter(
             availableJoinRules = availableJoinRules,
             spaces = spaces,
             isSpace = isSpace,
+            showsAccessOptions = showsAccessOptions,
             eventSink = ::handleEvent,
         )
     }

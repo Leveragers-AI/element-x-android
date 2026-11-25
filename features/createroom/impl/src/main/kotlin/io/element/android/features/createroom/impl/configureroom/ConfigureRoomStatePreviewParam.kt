@@ -117,6 +117,18 @@ open class ConfigureRoomStatePreviewParam : PreviewParameterProvider<ConfigureRo
                 spaces = listOf(aSpaceRoom()),
                 roomAddressValidity = RoomAddressValidity.Valid,
             ),
+            // Leveragers: simplified room creation, in the first space, without the access options.
+            aConfigureRoomState(
+                config = CreateRoomConfig(
+                    roomName = "Room 101",
+                    parentSpace = aSpaceRoom(),
+                    visibilityState = RoomVisibilityState.Private(
+                        joinRuleItem = JoinRuleItem.PrivateVisibility.Restricted(aSpaceRoom().roomId),
+                    ),
+                ),
+                spaces = listOf(aSpaceRoom()),
+                showsAccessOptions = false,
+            ),
         )
 }
 
@@ -143,10 +155,12 @@ fun aConfigureRoomState(
         )
     },
     spaces: List<SpaceRoom> = emptyList(),
+    showsAccessOptions: Boolean = true,
     eventSink: (ConfigureRoomEvent) -> Unit = { },
 ) = ConfigureRoomState(
     config = config,
     isSpace = isSpace,
+    showsAccessOptions = showsAccessOptions,
     avatarActions = avatarActions.toImmutableList(),
     createRoomAction = createRoomAction,
     cameraPermissionState = cameraPermissionState,

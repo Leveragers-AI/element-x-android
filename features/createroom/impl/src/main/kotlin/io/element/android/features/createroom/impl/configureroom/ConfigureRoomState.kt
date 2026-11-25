@@ -18,6 +18,8 @@ import kotlinx.collections.immutable.ImmutableList
 
 data class ConfigureRoomState(
     val isSpace: Boolean,
+    // Leveragers: whether the access options (and the address of a public room) are offered.
+    val showsAccessOptions: Boolean,
     val config: CreateRoomConfig,
     val avatarActions: ImmutableList<AvatarAction>,
     val createRoomAction: AsyncAction<RoomId>,

@@ -129,16 +129,18 @@ fun ConfigureRoomView(
                     onSelectSpace = { state.eventSink(ConfigureRoomEvent.SetParentSpace(it)) },
                 )
             }
-            RoomJoinRuleOptions(
-                options = state.availableJoinRules,
-                selected = state.config.visibilityState.joinRuleItem,
-                parentSpace = state.config.parentSpace,
-                onOptionClick = {
-                    focusManager.clearFocus()
-                    state.eventSink(ConfigureRoomEvent.JoinRuleChanged(it))
-                },
-            )
-            if (state.config.visibilityState !is RoomVisibilityState.Private) {
+            if (state.showsAccessOptions) {
+                RoomJoinRuleOptions(
+                    options = state.availableJoinRules,
+                    selected = state.config.visibilityState.joinRuleItem,
+                    parentSpace = state.config.parentSpace,
+                    onOptionClick = {
+                        focusManager.clearFocus()
+                        state.eventSink(ConfigureRoomEvent.JoinRuleChanged(it))
+                    },
+                )
+            }
+            if (state.showsAccessOptions && state.config.visibilityState !is RoomVisibilityState.Private) {
                 ListSectionHeader(title = stringResource(R.string.screen_create_room_room_address_section_title))
                 RoomAddressField(
                     modifier = Modifier.padding(horizontal = 16.dp),

@@ -82,4 +82,11 @@ object LeveragersConfig {
      * its button stay there to try again.
      */
     const val OPENS_SIGN_IN_AUTOMATICALLY = true
+
+    /**
+     * Whether creating a room is simplified: the first space the user can add rooms to is selected by default, and the
+     * room is open to the members of its space (invite only without a space), without the access and address options.
+     * A truly public room is not offered: our web app forbids it and the server refuses it. Creating a space is unchanged.
+     */
+    const val HAS_SIMPLIFIED_ROOM_CREATION = true
 }
