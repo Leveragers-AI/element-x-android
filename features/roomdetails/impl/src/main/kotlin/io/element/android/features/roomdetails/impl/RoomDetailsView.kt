@@ -278,7 +278,8 @@ fun RoomDetailsView(
                     }
                 }
                 is RoomDetailsType.Dm -> {
-                    if (state.canInvite) {
+                    // Leveragers: no invitation from a direct message.
+                    if (state.canInvite && LeveragersConfig.ALLOWS_INVITING_FROM_DIRECT_MESSAGES) {
                         // Note: for rooms the invite action is a Main action
                         PreferenceCategory {
                             InviteItem(onClick = invitePeople)

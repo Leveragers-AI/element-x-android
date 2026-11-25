@@ -37,4 +37,10 @@ object LeveragersConfig {
      * users list in the settings.
      */
     const val ALLOWS_BLOCKING_AND_REPORTING = false
+
+    /**
+     * Whether "Invite people" is offered in the details of a direct message. It would turn the conversation with an
+     * agent into a group, which the web app does not offer either. Regular rooms keep "Invite", ruled by power levels.
+     */
+    const val ALLOWS_INVITING_FROM_DIRECT_MESSAGES = false
 }

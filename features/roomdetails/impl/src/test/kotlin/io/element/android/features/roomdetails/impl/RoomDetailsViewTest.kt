@@ -348,6 +348,7 @@ class RoomDetailsViewTest : RobolectricTest() {
     @Config(qualifiers = "h1024dp")
     @Test
     fun `click on invite invokes the expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_INVITING_FROM_DIRECT_MESSAGES)
         ensureCalledOnce { callback ->
             setRoomDetailView(
                 state = aRoomDetailsState(
