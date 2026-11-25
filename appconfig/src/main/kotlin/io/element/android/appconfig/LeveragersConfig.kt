@@ -104,6 +104,13 @@ object LeveragersConfig {
     const val HAS_SOFTER_ROOM_SCREEN = true
 
     /**
+     * Whether the composer is a single floating capsule holding the attachment button, the text field and the send
+     * (or voice message) button, like the search of the home screen, as in the iOS app. The text formatting mode
+     * keeps Element's layout.
+     */
+    const val HAS_FLOATING_COMPOSER = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.

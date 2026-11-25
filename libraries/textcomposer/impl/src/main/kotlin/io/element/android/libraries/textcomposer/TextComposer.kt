@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -55,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.androidutils.ui.showKeyboard
@@ -163,11 +166,13 @@ fun TextComposer(
     }
     val canSendTextMessage = markdown.isNotBlank() || composerMode is MessageComposerMode.Attachment
 
+    // Leveragers: the floating capsule, except in the text formatting mode.
+    val isFloatingComposer = LeveragersConfig.HAS_FLOATING_COMPOSER && !showTextFormatting
     val textInput: @Composable () -> Unit = when (state) {
         is TextEditorState.Rich -> {
             val coroutineScope = rememberCoroutineScope()
             val view = LocalView.current
-            remember(state.richTextEditorState, composerMode, onResetComposerMode, onError) {
+            remember(state.richTextEditorState, composerMode, onResetComposerMode, onError, isFloatingComposer) {
                 @Composable {
                     TextInputBox(
                         modifier = Modifier
@@ -186,6 +191,7 @@ fun TextComposer(
                         composerMode = composerMode,
                         onResetComposerMode = onResetComposerMode,
                         isTextEmpty = state.richTextEditorState.messageHtml.isEmpty(),
+                        isFloating = isFloatingComposer,
                     ) {
                         RichTextEditor(
                             state = state.richTextEditorState,
@@ -212,6 +218,7 @@ fun TextComposer(
                     composerMode = composerMode,
                     onResetComposerMode = onResetComposerMode,
                     isTextEmpty = state.state.text.value().isEmpty(),
+                    isFloating = isFloatingComposer,
                 ) {
                     MarkdownTextInput(
                         state = state.state,
@@ -466,13 +473,27 @@ private fun StandardLayout(
     onResetComposerMode: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Leveragers: a single floating capsule, like the search of the home screen.
+    val isFloating = LeveragersConfig.HAS_FLOATING_COMPOSER
+    val buttonSize = if (isFloating) FLOATING_COMPOSER_BUTTON_SIZE else 48.dp
+    val buttonVerticalPadding = if (isFloating) 2.dp else 5.dp
     Column(modifier = modifier) {
         if (isRoomEncrypted == false) {
             Spacer(Modifier.height(16.dp))
             NotEncryptedBadge()
             Spacer(Modifier.height(4.dp))
         }
-        Row(verticalAlignment = Alignment.Bottom) {
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = if (isFloating) {
+                Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp)
+                    .clip(RoundedCornerShape(FLOATING_COMPOSER_CORNER_RADIUS))
+                    .background(ElementTheme.colors.bgSubtleSecondary)
+            } else {
+                Modifier
+            },
+        ) {
             when (composerMode) {
                 is MessageComposerMode.Attachment -> {
                     Spacer(modifier = Modifier.width(12.dp))
@@ -485,8 +506,8 @@ private fun StandardLayout(
                     // To avoid loosing keyboard focus, the IconButton has to be defined here and has to be always enabled.
                     IconButton(
                         modifier = Modifier
-                            .padding(top = 5.dp, bottom = 5.dp, start = 3.dp, end = endPadding)
-                            .size(48.dp),
+                            .padding(top = buttonVerticalPadding, bottom = buttonVerticalPadding, start = 3.dp, end = endPadding)
+                            .size(buttonSize),
                         onClick = {
                             if (voiceMessageState is VoiceMessageState.Idle) {
                                 onAddAttachment()
@@ -525,7 +546,7 @@ private fun StandardLayout(
             }
             Box(
                 modifier = Modifier
-                    .padding(bottom = 8.dp, top = 8.dp)
+                    .padding(bottom = if (isFloating) 2.dp else 8.dp, top = if (isFloating) 2.dp else 8.dp)
                     .weight(1f)
             ) {
                 val movableVoiceRecording = remember { movableContentOf { voiceRecording() } }
@@ -547,8 +568,8 @@ private fun StandardLayout(
             val endButtonContentDescription = stringResource(endButtonParams.endButtonContentDescriptionResId)
             IconButton(
                 modifier = Modifier
-                    .padding(bottom = 5.dp, top = 5.dp, end = 6.dp, start = 6.dp)
-                    .size(48.dp)
+                    .padding(bottom = buttonVerticalPadding, top = buttonVerticalPadding, end = if (isFloating) 4.dp else 6.dp, start = 6.dp)
+                    .size(buttonSize)
                     .clearAndSetSemantics {
                         contentDescription = endButtonContentDescription
                         onClick(null, null)
@@ -645,10 +666,12 @@ private fun TextInputBox(
     onResetComposerMode: () -> Unit,
     isTextEmpty: Boolean,
     modifier: Modifier = Modifier,
+    isFloating: Boolean = false,
     textInput: @Composable () -> Unit,
 ) {
-    val bgColor = ElementTheme.colors.bgSubtleSecondary
-    val borderColor = ElementTheme.colors.borderDisabled
+    // Leveragers: in the floating capsule, the text field has no border nor background of its own.
+    val bgColor = if (isFloating) Color.Transparent else ElementTheme.colors.bgSubtleSecondary
+    val borderColor = if (isFloating) Color.Transparent else ElementTheme.colors.borderDisabled
     val roundedCorners = textInputRoundedCornerShape(composerMode = composerMode)
 
     Column(
@@ -697,6 +720,10 @@ private fun TextInputBox(
         }
     }
 }
+
+// Leveragers: the floating composer capsule.
+private val FLOATING_COMPOSER_BUTTON_SIZE = 40.dp
+private val FLOATING_COMPOSER_CORNER_RADIUS = 24.dp
 
 private fun VoiceMessageState.endButtonKey() = when (this) {
     is VoiceMessageState.Idle -> "Idle"
