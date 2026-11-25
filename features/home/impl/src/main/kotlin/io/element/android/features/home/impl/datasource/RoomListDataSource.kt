@@ -10,6 +10,7 @@ package io.element.android.features.home.impl.datasource
 
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.libraries.androidutils.diff.DiffCacheUpdater
 import io.element.android.libraries.androidutils.diff.MutableListDiffCache
@@ -45,6 +46,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
 private const val PAGE_SIZE = 20
+private const val SECTIONED_PAGE_SIZE = 10_000
 private const val EXTENDED_VISIBILITY_RANGE_SIZE = 40
 private const val SUBSCRIBE_TO_VISIBLE_ROOMS_DEBOUNCE_IN_MILLIS = 300L
 private const val PAGINATION_THRESHOLD = 3 * PAGE_SIZE
@@ -67,7 +69,8 @@ class RoomListDataSource(
     }
 
     private val roomList = roomListService.createRoomList(
-        pageSize = PAGE_SIZE,
+        // Leveragers: the sectioned home screen sorts and groups every room itself, so they are all loaded at once.
+        pageSize = if (LeveragersConfig.HAS_WEB_ROOM_LIST_SECTIONS) SECTIONED_PAGE_SIZE else PAGE_SIZE,
         source = RoomList.Source.All,
         coroutineScope = sessionCoroutineScope
     )

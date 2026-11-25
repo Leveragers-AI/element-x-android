@@ -44,6 +44,8 @@ data class RoomListRoomSummary(
     val heroes: ImmutableList<AvatarData>,
     val isSpace: Boolean,
     val dmUserStatus: DisplayedStatus?,
+    // Leveragers: for the Low priority section of the home screen.
+    val isLowPriority: Boolean = false,
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

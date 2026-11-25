@@ -9,6 +9,8 @@
 package io.element.android.features.home.impl.roomlist
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import io.element.android.features.home.impl.leveragers.RoomListSection
+import io.element.android.features.home.impl.leveragers.WebRoomListSections
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsState
 import io.element.android.libraries.fullscreenintent.api.aFullScreenIntentPermissionsState
@@ -33,6 +35,16 @@ open class RoomListContentStatePreviewParam : PreviewParameterProvider<RoomListC
             aRoomsContentState(
                 showSwipeAvatarBanner = true,
             ),
+            // Leveragers: the rooms grouped into the sections of Element Web.
+            aRoomsContentState().let { state ->
+                state.copy(
+                    sections = RoomListSection.sections(
+                        rooms = state.summaries,
+                        spaceRoomIds = null,
+                        webSections = WebRoomListSections.EMPTY,
+                    ),
+                )
+            },
         )
 }
 

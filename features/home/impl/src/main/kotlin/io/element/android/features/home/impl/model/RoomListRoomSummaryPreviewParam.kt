@@ -202,6 +202,7 @@ internal fun aRoomListRoomSummary(
     isTombstoned: Boolean = false,
     isSpace: Boolean = false,
     dmUserStatus: DisplayedStatus? = null,
+    isLowPriority: Boolean = false,
 ) = RoomListRoomSummary(
     id = id,
     roomId = RoomId(id),
@@ -226,4 +227,5 @@ internal fun aRoomListRoomSummary(
     isTombstoned = isTombstoned,
     isSpace = isSpace,
     dmUserStatus = dmUserStatus,
+    isLowPriority = isLowPriority,
 )

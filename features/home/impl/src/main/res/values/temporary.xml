@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Leveragers: strings not in Localazy yet, to be imported there.
+  -->
+<resources>
+    <string name="screen_roomlist_section_direct_messages">"Direct messages"</string>
+</resources>

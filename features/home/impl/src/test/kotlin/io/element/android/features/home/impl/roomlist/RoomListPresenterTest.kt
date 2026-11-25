@@ -18,6 +18,8 @@ import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFactory
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.aRoomListFiltersState
+import io.element.android.features.home.impl.leveragers.FakeWebRoomListSectionsLoader
+import io.element.android.features.home.impl.leveragers.WebRoomListSectionsLoader
 import io.element.android.features.home.impl.model.createRoomListRoomSummary
 import io.element.android.features.home.impl.search.RoomListSearchEvent
 import io.element.android.features.home.impl.search.RoomListSearchState
@@ -771,6 +773,7 @@ class RoomListPresenterTest {
         featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         markRoomAsRead: MarkRoomAsRead? = null,
         sessionStore: SessionStore = InMemorySessionStore(),
+        webRoomListSectionsLoader: WebRoomListSectionsLoader = FakeWebRoomListSectionsLoader(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -804,5 +807,6 @@ class RoomListPresenterTest {
         coldStartWatcher = FakeAnalyticsColdStartWatcher(),
         featureFlagService = featureFlagService,
         sessionStore = sessionStore,
+        webRoomListSectionsLoader = webRoomListSectionsLoader,
     )
 }

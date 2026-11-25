@@ -26,7 +26,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -34,6 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -46,6 +50,7 @@ import io.element.android.features.home.impl.filters.RoomListFiltersEmptyStateRe
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.aRoomListFiltersState
 import io.element.android.features.home.impl.filters.selection.FilterSelectionState
+import io.element.android.features.home.impl.leveragers.RoomListSection
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.model.RoomSummaryDisplayType
 import io.element.android.features.home.impl.roomlist.RoomListBanner
@@ -242,6 +247,8 @@ private fun RoomsViewList(
     // removed from the composition. A new banner would then be added above the visible area of the list.
     val bannerSlotMinHeight = with(LocalDensity.current) { 1.toDp() }
     OnVisibleRangeChangeEffect(lazyListState) { visibleRange ->
+        // Leveragers: the sectioned list loads every room at once and its indexes aren't those of the rooms.
+        if (state.sections != null) return@OnVisibleRangeChangeEffect
         // The first item of the list is the banner slot, remove it to get the range of the rooms
         val roomsRange = (visibleRange.first - 1).coerceAtLeast(0)..<visibleRange.last
         eventSink(RoomListEvent.UpdateVisibleRange(roomsRange))
@@ -287,6 +294,17 @@ private fun RoomsViewList(
                 )
             }
         }
+        // Leveragers: the rooms grouped into the sections of Element Web.
+        state.sections?.let { sections ->
+            roomListSections(
+                sections = sections,
+                state = state,
+                hideInvitesAvatars = hideInvitesAvatars,
+                onRoomClick = onRoomClick,
+                eventSink = eventSink,
+            )
+            return@LazyColumn
+        }
         // Note: do not use a key for the LazyColumn, or the scroll will not behave as expected if a room
         // is moved to the top of the list.
         itemsIndexed(
@@ -308,6 +326,60 @@ private fun RoomsViewList(
             }
         }
     }
+}
+
+/**
+ * Leveragers: the rooms of each section of Element Web under a discreet title, as in the iOS app.
+ */
+private fun LazyListScope.roomListSections(
+    sections: ImmutableList<RoomListSection>,
+    state: RoomListContentState.Rooms,
+    hideInvitesAvatars: Boolean,
+    onRoomClick: (RoomListRoomSummary) -> Unit,
+    eventSink: (RoomListEvent) -> Unit,
+) {
+    sections.forEach { section ->
+        // String keys: the keys of a LazyColumn are saved in a Bundle.
+        item(key = "section:${section.kind}", contentType = "section_title") {
+            RoomListSectionTitle(section.kind)
+        }
+        items(
+            items = section.rooms,
+            key = { room -> room.roomId.value },
+            contentType = { room -> room.contentType() },
+        ) { room ->
+            RoomSummaryRow(
+                room = room,
+                hideInviteAvatars = hideInvitesAvatars,
+                isInviteSeen = room.displayType == RoomSummaryDisplayType.INVITE &&
+                    state.seenRoomInvites.contains(room.roomId),
+                showUnreadCount = state.showUnreadCount,
+                showAllActivity = state.showAllActivity,
+                onClick = onRoomClick,
+                eventSink = eventSink,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RoomListSectionTitle(kind: RoomListSection.Kind) {
+    Text(
+        text = when (kind) {
+            RoomListSection.Kind.Invites -> stringResource(R.string.screen_roomlist_filter_invites)
+            RoomListSection.Kind.Favourites -> stringResource(R.string.screen_roomlist_filter_favourites)
+            RoomListSection.Kind.DirectMessages -> stringResource(R.string.screen_roomlist_section_direct_messages)
+            RoomListSection.Kind.Rooms -> stringResource(R.string.screen_roomlist_filter_rooms)
+            RoomListSection.Kind.LowPriority -> stringResource(R.string.screen_roomlist_filter_low_priority)
+            is RoomListSection.Kind.Custom -> kind.name
+        },
+        style = ElementTheme.typography.fontBodySmMedium,
+        color = ElementTheme.colors.textSecondary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 4.dp)
+            .semantics { heading() },
+    )
 }
 
 /**

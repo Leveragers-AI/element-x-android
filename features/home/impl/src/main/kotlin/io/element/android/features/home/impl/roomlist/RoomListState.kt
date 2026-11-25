@@ -10,6 +10,7 @@ package io.element.android.features.home.impl.roomlist
 
 import androidx.compose.runtime.Immutable
 import io.element.android.features.home.impl.filters.RoomListFiltersState
+import io.element.android.features.home.impl.leveragers.RoomListSection
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.search.GlobalSearchState
 import io.element.android.features.home.impl.search.RoomListSearchState
@@ -78,5 +79,7 @@ sealed interface RoomListContentState {
         val summaries: ImmutableList<RoomListRoomSummary>,
         val seenRoomInvites: ImmutableSet<RoomId>,
         val showAllActivity: Boolean,
+        // Leveragers: the rooms grouped into the sections of Element Web, or null for a flat list.
+        val sections: ImmutableList<RoomListSection>? = null,
     ) : RoomListContentState
 }

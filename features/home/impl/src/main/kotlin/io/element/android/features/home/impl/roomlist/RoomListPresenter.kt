@@ -31,6 +31,11 @@ import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.into
+import io.element.android.features.home.impl.leveragers.RoomListSection
+import io.element.android.features.home.impl.leveragers.WebRoomListSections
+import io.element.android.features.home.impl.leveragers.WebRoomListSectionsLoader
+import io.element.android.features.home.impl.model.RoomListRoomSummary
+import io.element.android.features.home.impl.model.RoomSummaryDisplayType
 import io.element.android.features.home.impl.search.GlobalSearchState
 import io.element.android.features.home.impl.search.RoomListSearchEvent
 import io.element.android.features.home.impl.search.RoomListSearchState
@@ -61,18 +66,26 @@ import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.watchers.AnalyticsColdStartWatcher
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 
 @Inject
 class RoomListPresenter(
@@ -93,6 +106,7 @@ class RoomListPresenter(
     private val globalSearchPresenter: Presenter<GlobalSearchState>,
     private val featureFlagService: FeatureFlagService,
     private val sessionStore: SessionStore,
+    private val webRoomListSectionsLoader: WebRoomListSectionsLoader,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -273,11 +287,13 @@ class RoomListPresenter(
         }
         val seenRoomInvites by remember { seenInvitesStore.seenRoomIds() }.collectAsState(emptySet())
         val securityBannerState by rememberSecurityBannerState(securityBannerDismissed)
+        val sections = if (LeveragersConfig.HAS_WEB_ROOM_LIST_SECTIONS) rememberWebRoomListSections(roomSummaries) else null
         return when {
             showEmpty -> RoomListContentState.Empty(
                 securityBannerState = securityBannerState,
             )
-            showSkeleton -> RoomListContentState.Skeleton(count = 16)
+            // Leveragers: keep the loading rows until the sections of Element Web are known.
+            showSkeleton || sections is AsyncData.Loading -> RoomListContentState.Skeleton(count = 16)
             else -> {
                 coldStartWatcher.onRoomListVisible()
 
@@ -291,8 +307,64 @@ class RoomListPresenter(
                     summaries = roomSummaries.dataOrNull().orEmpty().toImmutableList(),
                     showAllActivity = showAllActivity,
                     seenRoomInvites = seenRoomInvites.toImmutableSet(),
+                    sections = sections?.dataOrNull(),
                 )
             }
+        }
+    }
+
+    /**
+     * Leveragers: the rooms grouped into the sections of Element Web, as in the iOS app.
+     *
+     * The sections are read from the account at the first launch, then whenever the joined rooms change (once they
+     * settle), and at most once a minute otherwise, to follow the changes made on the web. The last ones read are kept
+     * for the next launches; without them, the list waits for them [SECTIONS_TIMEOUT] at most.
+     */
+    @OptIn(FlowPreview::class)
+    @Composable
+    private fun rememberWebRoomListSections(
+        roomSummaries: AsyncData<ImmutableList<RoomListRoomSummary>>,
+    ): AsyncData<ImmutableList<RoomListSection>> {
+        var webSections by remember { mutableStateOf<WebRoomListSections?>(null) }
+        var hasTimedOut by remember { mutableStateOf(false) }
+        val currentRoomSummaries by rememberUpdatedState(roomSummaries)
+        LaunchedEffect(Unit) {
+            webSections = webSections ?: webRoomListSectionsLoader.cached()
+            delay(SECTIONS_TIMEOUT)
+            hasTimedOut = true
+        }
+        LaunchedEffect(Unit) {
+            var lastLoadedRoomIds: Set<RoomId>? = null
+            var lastLoadTime = TimeSource.Monotonic.markNow()
+            snapshotFlow { currentRoomSummaries.dataOrNull() }
+                .filterNotNull()
+                .map { summaries -> summaries.filter { it.displayType == RoomSummaryDisplayType.ROOM }.map { it.roomId }.toSet() }
+                .debounce(SECTIONS_RELOAD_DEBOUNCE)
+                .collect { joinedRoomIds ->
+                    val shouldLoad = joinedRoomIds != lastLoadedRoomIds || lastLoadTime.elapsedNow() > SECTIONS_RELOAD_INTERVAL
+                    if (shouldLoad) {
+                        lastLoadedRoomIds = joinedRoomIds
+                        lastLoadTime = TimeSource.Monotonic.markNow()
+                        webRoomListSectionsLoader.load(joinedRoomIds)?.let { webSections = it }
+                    }
+                }
+        }
+        // The rooms of the first space, as on the web where the last space picked (by default the first) is shown.
+        val spaceRoomIds by remember {
+            client.spaceService.spaceFiltersFlow.map { filters ->
+                filters.firstOrNull { it.level == 0 }?.descendants?.toSet()
+            }
+        }.collectAsState(initial = null)
+        val currentWebSections = webSections
+        val summaries = roomSummaries.dataOrNull()
+        return when {
+            summaries == null -> AsyncData.Loading()
+            currentWebSections == null && !hasTimedOut -> AsyncData.Loading()
+            else -> AsyncData.Success(
+                remember(summaries, spaceRoomIds, currentWebSections) {
+                    RoomListSection.sections(summaries, spaceRoomIds, currentWebSections ?: WebRoomListSections.EMPTY)
+                }
+            )
         }
     }
 
@@ -351,3 +423,8 @@ class RoomListPresenter(
         }
     }
 }
+
+// Leveragers: timings of the Element Web sections.
+private val SECTIONS_TIMEOUT = 5.seconds
+private val SECTIONS_RELOAD_DEBOUNCE = 1.seconds
+private val SECTIONS_RELOAD_INTERVAL = 1.minutes

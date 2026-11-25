@@ -82,6 +82,13 @@ object LeveragersConfig {
     const val HAS_SIMPLIFIED_HOME_SCREEN = true
 
     /**
+     * Whether the home screen groups the rooms into the sections of Element Web: Invites and Favourites, then the
+     * sections created on the web, Direct messages and Rooms in the order chosen on the web, then Low priority, each
+     * sorted alphabetically. The rooms are those of the first space (direct messages and invites are always shown).
+     */
+    const val HAS_WEB_ROOM_LIST_SECTIONS = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.

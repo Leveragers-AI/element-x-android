@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Leveragers: French of the strings of values/temporary.xml until Localazy has them, as on our Element Web.
+  -->
+<resources>
+    <string name="screen_roomlist_section_direct_messages">"Messages privés"</string>
+</resources>
