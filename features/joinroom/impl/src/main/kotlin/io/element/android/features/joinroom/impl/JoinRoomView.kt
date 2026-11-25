@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.invite.api.InviteData
@@ -237,13 +238,16 @@ private fun JoinRoomFooter(
                             leadingIcon = IconSource.Vector(CompoundIcons.Check())
                         )
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
-                    TextButton(
-                        text = stringResource(R.string.screen_join_room_decline_and_block_button_title),
-                        onClick = { onDeclineInvite(joinAuthorisationStatus.inviteData, true) },
-                        modifier = Modifier.fillMaxWidth(),
-                        destructive = true
-                    )
+                    // Leveragers: no blocking.
+                    if (LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        TextButton(
+                            text = stringResource(R.string.screen_join_room_decline_and_block_button_title),
+                            onClick = { onDeclineInvite(joinAuthorisationStatus.inviteData, true) },
+                            modifier = Modifier.fillMaxWidth(),
+                            destructive = true
+                        )
+                    }
                 }
             }
             JoinAuthorisationStatus.CanJoin -> {

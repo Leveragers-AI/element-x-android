@@ -9,6 +9,7 @@
 package io.element.android.features.messages.impl.actionlist
 
 import com.google.common.truth.Truth.assertThat
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.messages.impl.aUserEventPermissions
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemAction
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemActionPostProcessor
@@ -181,7 +182,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
                         TimelineItemAction.ViewSource,
-                        TimelineItemAction.ReportContent,
+                        *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -228,7 +229,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
                         TimelineItemAction.ViewSource,
-                        TimelineItemAction.ReportContent,
+                        *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -273,7 +274,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
                         TimelineItemAction.ViewSource,
-                        TimelineItemAction.ReportContent,
+                        *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -319,7 +320,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
                         TimelineItemAction.ViewSource,
-                        TimelineItemAction.ReportContent,
+                        *reportContentAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -366,7 +367,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
                         TimelineItemAction.ViewSource,
-                        TimelineItemAction.ReportContent,
+                        *reportContentAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -808,7 +809,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyCaption,
                         TimelineItemAction.ViewSource,
-                        TimelineItemAction.ReportContent,
+                        *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -1610,3 +1611,7 @@ private fun createActionListPresenter(
         getRecentEmojis = recentEmojis,
     )
 }
+
+// Leveragers: "Report" is only offered when blocking and reporting are allowed.
+private val reportContentAction: Array<TimelineItemAction> =
+    if (LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) arrayOf(TimelineItemAction.ReportContent) else emptyArray()

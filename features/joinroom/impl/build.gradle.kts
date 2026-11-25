@@ -26,6 +26,7 @@ android {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.appconfig)
     api(projects.features.joinroom.api)
     implementation(projects.libraries.core)
     implementation(projects.libraries.architecture)

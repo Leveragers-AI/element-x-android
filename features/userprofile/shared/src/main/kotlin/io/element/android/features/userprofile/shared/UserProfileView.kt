@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.startchat.api.ConfirmingStartDmWithMatrixUser
 import io.element.android.features.userprofile.api.UserProfileEvent
@@ -95,8 +96,11 @@ fun UserProfileView(
             Spacer(modifier = Modifier.height(26.dp))
             if (!state.isCurrentUser) {
                 VerifyUserSection(state, onVerifyClick = { onVerifyClick(state.userId) })
-                BlockUserSection(state)
-                BlockUserDialogs(state)
+                // Leveragers: no blocking.
+                if (LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) {
+                    BlockUserSection(state)
+                    BlockUserDialogs(state)
+                }
             }
             AsyncActionView(
                 async = state.startDmActionState,

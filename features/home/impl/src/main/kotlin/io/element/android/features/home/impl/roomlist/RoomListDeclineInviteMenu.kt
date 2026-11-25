@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.appconfig.ProtectionConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.home.impl.R
@@ -107,13 +108,16 @@ private fun RoomListDeclineInviteMenuContent(
             modifier = Modifier.fillMaxWidth(),
             onClick = onDeclineClick,
         )
-        Spacer(Modifier.height(16.dp))
-        OutlinedButton(
-            text = stringResource(CommonStrings.action_decline_and_block),
-            modifier = Modifier.fillMaxWidth(),
-            destructive = true,
-            onClick = onDeclineAndBlockClick
-        )
+        // Leveragers: no blocking.
+        if (LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) {
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                text = stringResource(CommonStrings.action_decline_and_block),
+                modifier = Modifier.fillMaxWidth(),
+                destructive = true,
+                onClick = onDeclineAndBlockClick
+            )
+        }
         Spacer(Modifier.height(16.dp))
         TextButton(
             text = stringResource(CommonStrings.action_cancel),

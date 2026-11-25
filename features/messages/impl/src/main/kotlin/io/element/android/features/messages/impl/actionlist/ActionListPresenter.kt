@@ -19,6 +19,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.messages.impl.UserEventPermissions
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemAction
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemActionComparator
@@ -240,7 +241,8 @@ class DefaultActionListPresenter(
             if (isDeveloperModeEnabled) {
                 add(TimelineItemAction.ViewSource)
             }
-            if (!timelineItem.isMine) {
+            // Leveragers: no reporting.
+            if (!timelineItem.isMine && LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) {
                 add(TimelineItemAction.ReportContent)
             }
             if (canRedact) {

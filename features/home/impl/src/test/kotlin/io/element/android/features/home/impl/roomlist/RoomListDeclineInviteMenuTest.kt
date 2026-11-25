@@ -12,6 +12,7 @@ package io.element.android.features.home.impl.roomlist
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.home.impl.model.aRoomListRoomSummary
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.tests.testutils.EnsureCalledOnceWithParam
@@ -20,6 +21,7 @@ import io.element.android.tests.testutils.EventsRecorder
 import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import io.element.android.tests.testutils.setSafeContent
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 
 class RoomListDeclineInviteMenuTest : RobolectricTest() {
@@ -46,6 +48,7 @@ class RoomListDeclineInviteMenuTest : RobolectricTest() {
 
     @Test
     fun `clicking on decline and block when canReportRoom=true, it emits the expected Events and callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<RoomListEvent>()
         val menu = RoomListState.DeclineInviteMenu.Shown(roomSummary = aRoomListRoomSummary())
         setSafeContent {
@@ -63,6 +66,7 @@ class RoomListDeclineInviteMenuTest : RobolectricTest() {
 
     @Test
     fun `clicking on decline and block when canReportRoom=false, it emits the expected Events`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<RoomListEvent>()
         val menu = RoomListState.DeclineInviteMenu.Shown(roomSummary = aRoomListRoomSummary())
         setSafeContent {

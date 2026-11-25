@@ -16,6 +16,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.userprofile.api.UserProfileEvent
 import io.element.android.features.userprofile.api.UserProfileState
 import io.element.android.features.userprofile.api.UserProfileVerificationState
@@ -42,6 +43,7 @@ import io.element.android.tests.testutils.ensureCalledOnceWithParam
 import io.element.android.tests.testutils.ensureCalledOnceWithTwoParams
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.robolectric.annotation.Config
 
@@ -131,6 +133,7 @@ class UserProfileViewTest : RobolectricTest() {
     @Config(qualifiers = "h1024dp")
     @Test
     fun `on Block user clicked - a BlockUser event is emitted with needsConfirmation`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<UserProfileEvent>()
         setUserProfileView(
             state = aUserProfileState(
@@ -143,6 +146,7 @@ class UserProfileViewTest : RobolectricTest() {
 
     @Test
     fun `on confirming block user - a BlockUser event is emitted without needsConfirmation`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<UserProfileEvent>()
         setUserProfileView(
             state = aUserProfileState(
@@ -156,6 +160,7 @@ class UserProfileViewTest : RobolectricTest() {
 
     @Test
     fun `on canceling blocking a user - a ClearConfirmationDialog event is emitted`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<UserProfileEvent>()
         setUserProfileView(
             state = aUserProfileState(
@@ -170,6 +175,7 @@ class UserProfileViewTest : RobolectricTest() {
     @Config(qualifiers = "h1024dp")
     @Test
     fun `on Unblock user clicked - an UnblockUser event is emitted with needsConfirmation`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<UserProfileEvent>()
         setUserProfileView(
             state = aUserProfileState(
@@ -183,6 +189,7 @@ class UserProfileViewTest : RobolectricTest() {
 
     @Test
     fun `on confirming Unblock user - an UnblockUser event is emitted without needsConfirmation`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<UserProfileEvent>()
         setUserProfileView(
             state = aUserProfileState(
@@ -197,6 +204,7 @@ class UserProfileViewTest : RobolectricTest() {
 
     @Test
     fun `on canceling unblocking a user - a ClearConfirmationDialog event is emitted`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<UserProfileEvent>()
         setUserProfileView(
             state = aUserProfileState(

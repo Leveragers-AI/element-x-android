@@ -840,11 +840,12 @@ private fun OtherActionsSection(
     dmOtherMemberDetailsState: UserProfileState?,
 ) {
     PreferenceCategory {
-        if (dmOtherMemberDetailsState != null) {
+        // Leveragers: no blocking nor reporting.
+        if (dmOtherMemberDetailsState != null && LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) {
             BlockUserSection(dmOtherMemberDetailsState)
             BlockUserDialogs(dmOtherMemberDetailsState)
         }
-        if (canReportRoom) {
+        if (canReportRoom && LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) {
             ListItem(
                 content = {
                     Text(stringResource(CommonStrings.action_report_room))

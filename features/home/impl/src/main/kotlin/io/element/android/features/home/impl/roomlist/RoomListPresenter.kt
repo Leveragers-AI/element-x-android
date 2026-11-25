@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import dev.zacsweers.metro.Inject
 import im.vector.app.features.analytics.plan.Interaction
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.datasource.RoomListDataSource
@@ -183,7 +184,8 @@ class RoomListPresenter(
             roomListDataSource.updateFilter(allFilters)
         }
 
-        val canReportRoom by produceState(false) { value = client.canReportRoom() }
+        // Leveragers: no reporting.
+        val canReportRoom by produceState(false) { value = LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING && client.canReportRoom() }
         val showUnreadCount by produceState(false) {
             featureFlagService.isFeatureEnabledFlow(FeatureFlags.UnreadIndicatorCount).collect { value = it }
         }

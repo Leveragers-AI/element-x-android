@@ -18,6 +18,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.preferences.impl.R
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.matrix.api.media.MediaPreviewValue
@@ -28,6 +29,7 @@ import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.robolectric.annotation.Config
 
@@ -147,6 +149,7 @@ class ModerationAndSafetyViewTest : RobolectricTest() {
 
     @Test
     fun `click on Blocked users invokes the expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<ModerationAndSafetyEvent>(expectEvents = false)
         ensureCalledOnce { callback ->
             setModerationAndSafetyView(

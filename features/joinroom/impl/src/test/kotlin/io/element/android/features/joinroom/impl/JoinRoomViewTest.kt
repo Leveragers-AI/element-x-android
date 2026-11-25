@@ -14,6 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.AndroidComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.invite.api.InviteData
 import io.element.android.features.invite.test.anInviteData
 import io.element.android.libraries.architecture.AsyncAction
@@ -29,6 +30,7 @@ import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.ensureCalledOnceWithParam
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 
 class JoinRoomViewTest : RobolectricTest() {
@@ -172,6 +174,7 @@ class JoinRoomViewTest : RobolectricTest() {
 
     @Test
     fun `clicking on Decline and block when JoinAuthorisationStatus is IsInvited and can report room, the expected callback is invoked`() {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         runAndroidComposeUiTest {
             val eventsRecorder = EventsRecorder<JoinRoomEvent>(expectEvents = false)
             val inviteData = anInviteData()
@@ -192,6 +195,7 @@ class JoinRoomViewTest : RobolectricTest() {
 
     @Test
     fun `clicking on Decline and block when JoinAuthorisationStatus is IsInvited and cant report room, emits the expected Event`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         val eventsRecorder = EventsRecorder<JoinRoomEvent>()
         val inviteData = anInviteData()
         val joinRoomState = aJoinRoomState(

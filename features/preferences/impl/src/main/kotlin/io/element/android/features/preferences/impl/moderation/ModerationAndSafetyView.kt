@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.preferences.impl.R
 import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
@@ -66,7 +67,8 @@ fun ModerationAndSafetyView(
         PresenceSection(state)
         InvitesSection(state)
         MediaSection(state)
-        if (state.showBlockedUsersItem) {
+        // Leveragers: no blocking, so no blocked users list.
+        if (state.showBlockedUsersItem && LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING) {
             BlockedUsersSection(
                 numberOfBlockedUsers = state.numberOfBlockedUsers,
                 onOpenBlockedUsers = onOpenBlockedUsers,

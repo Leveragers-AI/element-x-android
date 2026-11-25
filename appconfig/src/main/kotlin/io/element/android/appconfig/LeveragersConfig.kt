@@ -29,4 +29,12 @@ object LeveragersConfig {
      * where the poll button is hidden. Polls received from other clients are still shown and can be voted on.
      */
     const val CAN_CREATE_POLLS = false
+
+    /**
+     * Whether users can be blocked and rooms or messages reported. Our agents and colleagues share the same organisation.
+     * Hides "Report" in the message menu, "Report room" in the room list menu and in room details, "Decline and block"
+     * for invitations (room list and invite screen), "Block user" in DM details and member details, and the blocked
+     * users list in the settings.
+     */
+    const val ALLOWS_BLOCKING_AND_REPORTING = false
 }

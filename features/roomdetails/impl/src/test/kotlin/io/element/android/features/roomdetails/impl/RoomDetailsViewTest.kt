@@ -302,6 +302,7 @@ class RoomDetailsViewTest : RobolectricTest() {
     @Config(qualifiers = "h1500dp")
     @Test
     fun `click on report room  invokes expected callback`() = runAndroidComposeUiTest {
+        assumeTrue(LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING)
         ensureCalledOnce { callback ->
             setRoomDetailView(
                 state = aRoomDetailsState(
