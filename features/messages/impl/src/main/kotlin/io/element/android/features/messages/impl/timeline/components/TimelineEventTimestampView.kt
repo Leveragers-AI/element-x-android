@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.timeline.TimelineEvent
@@ -51,7 +52,12 @@ fun TimelineEventTimestampView(
     val hasEncryptionCritical = event.messageShield?.isCritical.orFalse()
     val isMessageEdited = event.content.isEdited()
     val isMessageRedacted = event.content.isRedacted()
-    val tint = if (hasError || hasEncryptionCritical && !isMessageRedacted) ElementTheme.colors.textCriticalPrimary else ElementTheme.colors.textSecondary
+    val tint = when {
+        hasError || hasEncryptionCritical && !isMessageRedacted -> ElementTheme.colors.textCriticalPrimary
+        // Leveragers: a paler time on the softer room screen.
+        LeveragersConfig.HAS_SOFTER_ROOM_SCREEN -> ElementTheme.colors.iconTertiary
+        else -> ElementTheme.colors.textSecondary
+    }
 
     val shield = event.messageShield
     val isVerifiedUserSendFailure = event.localSendState is LocalEventSendState.Failed.VerifiedUser

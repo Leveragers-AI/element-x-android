@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemDaySeparatorModel
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemDaySeparatorModelPreviewParam
@@ -44,7 +45,8 @@ internal fun TimelineItemDaySeparatorView(
                     heading()
                 },
             text = model.formattedDate,
-            style = ElementTheme.typography.fontBodyMdMedium,
+            // Leveragers: no bold on the softer room screen.
+            style = if (LeveragersConfig.HAS_SOFTER_ROOM_SCREEN) ElementTheme.typography.fontBodyMdRegular else ElementTheme.typography.fontBodyMdMedium,
             color = ElementTheme.colors.textPrimary,
         )
     }

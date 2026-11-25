@@ -8,6 +8,7 @@
 
 package io.element.android.features.messages.impl.topbars
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +22,11 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +35,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.MessagesMenuActions
@@ -49,7 +57,9 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.preview.ROOM_NAME
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.Icon
+import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
+import io.element.android.libraries.designsystem.theme.leveragersDisplayTextStyle
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.components.DisplayNameWithStatus
@@ -74,6 +84,19 @@ internal fun MessagesViewTopBar(
     modifier: Modifier = Modifier,
     menuActions: @Composable RowScope.() -> Unit,
 ) {
+    if (LeveragersConfig.HAS_SOFTER_ROOM_SCREEN) {
+        LeveragersMessagesViewTopBar(
+            roomName = roomName,
+            roomAvatar = roomAvatar,
+            isTombstoned = isTombstoned,
+            heroes = heroes,
+            onRoomDetailsClick = onRoomDetailsClick,
+            onBackClick = onBackClick,
+            modifier = modifier,
+            menuActions = menuActions,
+        )
+        return
+    }
     TopAppBar(
         modifier = modifier.padding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()),
         navigationIcon = {
@@ -122,7 +145,8 @@ internal fun MessagesViewTopBar(
                     else -> Unit
                 }
 
-                when (sharedHistoryIcon) {
+                // Leveragers: no shared history icon next to the room name.
+                when (if (LeveragersConfig.HAS_SOFTER_ROOM_SCREEN) SharedHistoryIcon.NONE else sharedHistoryIcon) {
                     SharedHistoryIcon.NONE -> Unit
                     SharedHistoryIcon.SHARED -> Icon(
                         modifier = iconModifier,
@@ -141,6 +165,63 @@ internal fun MessagesViewTopBar(
         },
         actions = menuActions,
         windowInsets = WindowInsets(0.dp)
+    )
+}
+
+/**
+ * Leveragers: a centered capsule with the avatar and the name of the room in Sora, as in the iOS app.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LeveragersMessagesViewTopBar(
+    roomName: String?,
+    roomAvatar: AvatarData,
+    isTombstoned: Boolean,
+    heroes: ImmutableList<AvatarData>,
+    onRoomDetailsClick: () -> Unit,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    menuActions: @Composable RowScope.() -> Unit,
+) {
+    CenterAlignedTopAppBar(
+        modifier = modifier.padding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = ElementTheme.colors.bgCanvasDefault,
+            scrolledContainerColor = ElementTheme.colors.bgCanvasDefault,
+        ),
+        navigationIcon = {
+            BackButton(onClick = onBackClick)
+        },
+        title = {
+            Row(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(ElementTheme.colors.bgSubtleSecondary)
+                    .clickable { onRoomDetailsClick() }
+                    .padding(start = 4.dp, end = 14.dp, top = 4.dp, bottom = 4.dp)
+                    .semantics(mergeDescendants = true) { heading() },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Avatar(
+                    avatarData = roomAvatar,
+                    avatarType = AvatarType.Room(
+                        heroes = heroes,
+                        isTombstoned = isTombstoned,
+                    ),
+                )
+                Text(
+                    text = roomName ?: stringResource(CommonStrings.common_no_room_name),
+                    style = leveragersDisplayTextStyle(fontSize = 16.sp),
+                    color = ElementTheme.colors.textPrimary,
+                    fontStyle = FontStyle.Italic.takeIf { roomName == null },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        },
+        actions = menuActions,
+        windowInsets = WindowInsets(0.dp),
     )
 }
 

@@ -9,6 +9,7 @@
 package io.element.android.features.messages.impl.timeline.model
 
 import androidx.compose.runtime.Immutable
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.features.messages.impl.timeline.components.MessageShieldData
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemAttachmentsContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemEventContent
@@ -38,6 +39,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.SendHandlePro
 import io.element.android.libraries.matrix.api.timeline.item.event.TimelineItemDebugInfoProvider
 import io.element.android.libraries.matrix.api.timeline.item.event.TimelineItemEventOrigin
 import io.element.android.libraries.matrix.api.timeline.item.event.getDisambiguatedDisplayName
+import io.element.android.libraries.matrix.api.timeline.item.event.isCritical
 import io.element.android.libraries.matrix.ui.messages.reply.InReplyToDetails
 import kotlinx.collections.immutable.ImmutableList
 
@@ -138,9 +140,12 @@ sealed interface TimelineItem {
             get() = EventOrTransactionId.from(eventId = eventId, transactionId = transactionId)
 
         // No need to be lazy here?
-        val messageShield: MessageShieldData? = messageShieldProvider(strict = false)?.let {
-            MessageShieldData(it, forwarder, forwarderProfile)
-        }
+        val messageShield: MessageShieldData? = messageShieldProvider(strict = false)
+            // Leveragers: no grey notice on the messages decrypted with the keys of the backup.
+            ?.takeUnless {
+                LeveragersConfig.HAS_SOFTER_ROOM_SCREEN && it is MessageShield.AuthenticityNotGuaranteed && !it.isCritical && forwarder == null
+            }
+            ?.let { MessageShieldData(it, forwarder, forwarderProfile) }
 
         val debugInfo: TimelineItemDebugInfo
             get() = timelineItemDebugInfoProvider()

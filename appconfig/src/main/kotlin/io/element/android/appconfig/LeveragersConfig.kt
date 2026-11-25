@@ -96,6 +96,14 @@ object LeveragersConfig {
     const val HAS_LIGHT_ROOM_ROWS = true
 
     /**
+     * Whether the room screen is softer, as in the iOS app: rounder bubbles (20dp corners, 6dp joints in a series) with
+     * more padding, a smaller sender name, a paler time, a day separator without bold, a centered header capsule with
+     * the room name in Sora, no shared history icon next to it, and no grey "authenticity not guaranteed" notice on the
+     * messages decrypted with the keys of the backup (the other encryption warnings stay).
+     */
+    const val HAS_SOFTER_ROOM_SCREEN = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.

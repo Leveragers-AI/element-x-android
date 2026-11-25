@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstrainScope
 import androidx.constraintlayout.compose.ConstraintLayout
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.timeline.TimelineEvent
@@ -890,8 +891,12 @@ private fun MessageEventBubbleContent(
 
         val topPadding = if (inReplyToDetails != null) 0.dp else 8.dp
         val contentModifier = when (paddingBehaviour) {
-            ContentPadding.Textual ->
+            // Leveragers: more padding in the softer bubbles.
+            ContentPadding.Textual -> if (LeveragersConfig.HAS_SOFTER_ROOM_SCREEN) {
+                Modifier.padding(start = 14.dp, end = 14.dp, top = if (inReplyToDetails != null) 0.dp else 10.dp, bottom = 10.dp)
+            } else {
                 Modifier.padding(start = 12.dp, end = 12.dp, top = topPadding, bottom = 8.dp)
+            }
             ContentPadding.Media -> {
                 if (inReplyToDetails == null) {
                     Modifier

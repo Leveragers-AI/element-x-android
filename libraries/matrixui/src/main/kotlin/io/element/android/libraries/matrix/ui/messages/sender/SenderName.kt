@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -82,7 +83,12 @@ private fun RowScope.MainText(
     mode: SenderNameMode,
 ) {
     val style = when (mode) {
-        is SenderNameMode.Timeline -> ElementTheme.typography.fontBodyMdMedium
+        // Leveragers: a smaller sender name on the softer room screen.
+        is SenderNameMode.Timeline -> if (LeveragersConfig.HAS_SOFTER_ROOM_SCREEN) {
+            ElementTheme.typography.fontBodySmMedium
+        } else {
+            ElementTheme.typography.fontBodyMdMedium
+        }
         SenderNameMode.ActionList,
         SenderNameMode.Reply -> ElementTheme.typography.fontBodySmMedium
     }
