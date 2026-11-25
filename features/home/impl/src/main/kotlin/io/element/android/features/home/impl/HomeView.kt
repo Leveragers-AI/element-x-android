@@ -41,6 +41,8 @@ import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.components.HomeTopBar
+import io.element.android.features.home.impl.components.LeveragersHomeSearchButton
+import io.element.android.features.home.impl.components.LeveragersHomeTopBar
 import io.element.android.features.home.impl.components.MultiAccountAnnouncementBottomSheet
 import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
@@ -201,6 +203,14 @@ private fun HomeScaffold(
     Scaffold(
         modifier = modifier,
         topBar = {
+            // Leveragers: the header of our apps on the simplified home screen.
+            if (LeveragersConfig.HAS_SIMPLIFIED_HOME_SCREEN) {
+                LeveragersHomeTopBar(
+                    onOpenSettings = onOpenSettings,
+                    onStartChatClick = onStartChatClick,
+                )
+                return@Scaffold
+            }
             HomeTopBar(
                 selectedNavigationItem = state.currentHomeNavigationBarItem,
                 currentUserAndNeighbors = state.currentUserAndNeighbors,
@@ -233,12 +243,17 @@ private fun HomeScaffold(
             )
         },
         floatingActionButton = {
-            // Leveragers: no Chats and Spaces tabs on the simplified home screen, only the button to start a chat.
+            // Leveragers: no Chats and Spaces tabs on the simplified home screen (the button to start a chat is in its
+            // header), only the room list search.
             if (LeveragersConfig.HAS_SIMPLIFIED_HOME_SCREEN) {
-                HomeFloatingActionButton(
-                    onClick = onStartChatClick,
-                    contentDescription = CommonStrings.action_create_room,
-                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
+                LeveragersHomeSearchButton(
+                    onClick = {
+                        if (roomListState.globalSearchState.isEnabled) {
+                            roomListState.globalSearchState.eventSink(GlobalSearchEvent.ToggleSearchVisibility)
+                        } else {
+                            roomListState.eventSink(RoomListEvent.ToggleSearchResults)
+                        }
+                    },
                 )
                 return@Scaffold
             }
