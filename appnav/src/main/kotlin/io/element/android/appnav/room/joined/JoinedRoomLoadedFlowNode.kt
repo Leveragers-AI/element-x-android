@@ -17,17 +17,22 @@ import androidx.lifecycle.lifecycleScope
 import com.bumble.appyx.core.lifecycle.subscribe
 import com.bumble.appyx.core.modality.BuildContext
 import com.bumble.appyx.core.node.Node
+import com.bumble.appyx.core.node.node
 import com.bumble.appyx.core.plugin.Plugin
 import com.bumble.appyx.navmodel.backstack.BackStack
+import com.bumble.appyx.navmodel.backstack.active
+import com.bumble.appyx.navmodel.backstack.operation.newRoot
 import com.bumble.appyx.navmodel.backstack.operation.pop
 import com.bumble.appyx.navmodel.backstack.operation.push
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.appnav.di.RoomGraphFactory
 import io.element.android.appnav.di.TimelineBindings
 import io.element.android.appnav.room.RoomNavigationTarget
 import io.element.android.features.forward.api.ForwardEntryPoint
+import io.element.android.features.home.api.SpaceFirstRoomProvider
 import io.element.android.features.messages.api.MessagesEntryPoint
 import io.element.android.features.roomdetails.api.RoomDetailsEntryPoint
 import io.element.android.features.space.api.SpaceEntryPoint
@@ -47,6 +52,7 @@ import io.element.android.libraries.matrix.api.core.ThreadId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
 import io.element.android.libraries.matrix.api.room.JoinedRoom
+import io.element.android.libraries.matrix.ui.room.LoadingRoomState
 import io.element.android.services.analytics.api.AnalyticsLongRunningTransaction.LoadJoinedRoomFlow
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.finishLongRunningTransaction
@@ -72,6 +78,7 @@ class JoinedRoomLoadedFlowNode(
     private val matrixClient: MatrixClient,
     private val activeRoomsHolder: ActiveRoomsHolder,
     private val analyticsService: AnalyticsService,
+    private val spaceFirstRoomProvider: SpaceFirstRoomProvider,
     roomGraphFactory: RoomGraphFactory,
 ) : BaseFlowNode<JoinedRoomLoadedFlowNode.NavTarget>(
     backstack = BackStack(
@@ -87,6 +94,9 @@ class JoinedRoomLoadedFlowNode(
         fun handlePermalinkClick(data: PermalinkData, pushToBackstack: Boolean)
         fun navigateToGlobalNotificationSettings()
         fun navigateToDeveloperSettings()
+
+        /** Leveragers: opens the given room in place of the current one. */
+        fun replaceWithRoom(roomId: RoomId) = navigateToRoom(roomId, emptyList())
     }
 
     data class Inputs(
@@ -112,6 +122,7 @@ class JoinedRoomLoadedFlowNode(
                 sendMessageWatcher?.start()
                 fetchRoomMembers()
                 trackVisitedRoom()
+                openFirstRoomOfSpace()
             },
             onResume = {
                 analyticsService.finishLongRunningTransaction(LoadJoinedRoomFlow)
@@ -195,6 +206,13 @@ class JoinedRoomLoadedFlowNode(
             NavTarget.Space -> {
                 createSpaceNode(buildContext)
             }
+            NavTarget.OpeningSpace -> node(buildContext) { modifier ->
+                LoadingRoomNodeView(
+                    state = LoadingRoomState.Loading,
+                    onBackClick = { callback.onDone() },
+                    modifier = modifier,
+                )
+            }
             is NavTarget.ForwardEvent -> {
                 val params = ForwardEntryPoint.Params(
                     eventIds = listOf(navTarget.eventId),
@@ -214,6 +232,19 @@ class JoinedRoomLoadedFlowNode(
                     params = params,
                     callback = callback,
                 )
+            }
+        }
+    }
+
+    // Leveragers: a joined space opens its first room, its page only when it has none, as on Element Web.
+    private fun openFirstRoomOfSpace() {
+        if (backstack.active?.key?.navTarget != NavTarget.OpeningSpace) return
+        lifecycleScope.launch {
+            val firstRoomId = spaceFirstRoomProvider.firstRoomId(inputs.room.roomId)
+            if (firstRoomId != null) {
+                callback.replaceWithRoom(firstRoomId)
+            } else {
+                backstack.newRoot(NavTarget.Space)
             }
         }
     }
@@ -280,6 +311,10 @@ class JoinedRoomLoadedFlowNode(
         @Parcelize
         data object Space : NavTarget
 
+        /** Leveragers: while the first room of a space is picked, see [LeveragersConfig.OPENS_FIRST_ROOM_OF_SPACES]. */
+        @Parcelize
+        data object OpeningSpace : NavTarget
+
         @Parcelize
         data class Messages(
             val focusedEventId: EventId? = null,
@@ -321,7 +356,11 @@ private fun initialElement(plugins: List<Plugin>): JoinedRoomLoadedFlowNode.NavT
     return when (input.initialElement) {
         is RoomNavigationTarget.Root -> {
             if (input.room.roomInfoFlow.value.isSpace) {
-                JoinedRoomLoadedFlowNode.NavTarget.Space
+                if (LeveragersConfig.OPENS_FIRST_ROOM_OF_SPACES) {
+                    JoinedRoomLoadedFlowNode.NavTarget.OpeningSpace
+                } else {
+                    JoinedRoomLoadedFlowNode.NavTarget.Space
+                }
             } else {
                 JoinedRoomLoadedFlowNode.NavTarget.Messages(input.initialElement.eventId)
             }

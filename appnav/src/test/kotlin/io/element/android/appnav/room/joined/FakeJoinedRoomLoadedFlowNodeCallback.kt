@@ -12,10 +12,13 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
 import io.element.android.tests.testutils.lambda.lambdaError
 
-class FakeJoinedRoomLoadedFlowNodeCallback : JoinedRoomLoadedFlowNode.Callback {
+class FakeJoinedRoomLoadedFlowNodeCallback(
+    private val replaceWithRoomResult: (RoomId) -> Unit = { lambdaError() },
+) : JoinedRoomLoadedFlowNode.Callback {
     override fun onDone() = lambdaError()
     override fun navigateToRoom(roomId: RoomId, serverNames: List<String>, clearBackStack: Boolean) = lambdaError()
     override fun handlePermalinkClick(data: PermalinkData, pushToBackstack: Boolean) = lambdaError()
     override fun navigateToGlobalNotificationSettings() = lambdaError()
     override fun navigateToDeveloperSettings() = lambdaError()
+    override fun replaceWithRoom(roomId: RoomId) = replaceWithRoomResult(roomId)
 }

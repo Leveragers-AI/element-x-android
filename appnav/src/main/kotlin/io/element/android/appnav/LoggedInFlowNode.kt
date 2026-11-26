@@ -381,6 +381,12 @@ class LoggedInFlowNode(
                         }
                     }
 
+                    override fun replaceWithRoom(roomId: RoomId) {
+                        lifecycleScope.launch {
+                            attachRoom(roomIdOrAlias = roomId.toRoomIdOrAlias(), replacesCurrentRoom = true)
+                        }
+                    }
+
                     override fun handlePermalinkClick(data: PermalinkData, pushToBackstack: Boolean) {
                         when (data) {
                             is PermalinkData.UserLink -> {
@@ -602,6 +608,7 @@ class LoggedInFlowNode(
         roomDescription: RoomDescription? = null,
         initialElement: RoomNavigationTarget = RoomNavigationTarget.Root(),
         clearBackstack: Boolean = false,
+        replacesCurrentRoom: Boolean = false,
     ): RoomFlowNode {
         waitForNavTargetAttached { navTarget ->
             navTarget is NavTarget.Home
@@ -614,7 +621,7 @@ class LoggedInFlowNode(
                 trigger = trigger,
                 initialElement = initialElement,
             )
-            backstack.accept(AttachRoomOperation(roomNavTarget, clearBackstack))
+            backstack.accept(AttachRoomOperation(roomNavTarget, clearBackstack, replacesCurrentRoom))
         }
 
         // If we don't do this check, we might be returning while a previous node with the same type is still displayed
@@ -681,6 +688,8 @@ class LoggedInFlowNode(
 private class AttachRoomOperation(
     val roomTarget: LoggedInFlowNode.NavTarget.Room,
     val clearBackstack: Boolean,
+    /** Leveragers: the room shown now is removed, so that going back skips it. */
+    val replacesCurrentRoom: Boolean = false,
 ) : BackStackOperation<LoggedInFlowNode.NavTarget> {
     /**
      * Returns a list containing last [count] elements that match [predicate] while preserving other elements.
@@ -694,6 +703,16 @@ private class AttachRoomOperation(
     override fun isApplicable(elements: NavElements<LoggedInFlowNode.NavTarget, BackStack.State>) = true
 
     override fun invoke(elements: BackStackElements<LoggedInFlowNode.NavTarget>): BackStackElements<LoggedInFlowNode.NavTarget> {
+        return attach(
+            if (replacesCurrentRoom) {
+                elements.filterNot { it.targetState == ACTIVE && it.key.navTarget is LoggedInFlowNode.NavTarget.Room }
+            } else {
+                elements
+            }
+        )
+    }
+
+    private fun attach(elements: BackStackElements<LoggedInFlowNode.NavTarget>): BackStackElements<LoggedInFlowNode.NavTarget> {
         return if (clearBackstack) {
             // Makes sure the room list target is alone in the backstack and stashed
             elements.mapNotNull { element ->

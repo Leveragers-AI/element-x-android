@@ -18,6 +18,7 @@ import com.bumble.appyx.navmodel.backstack.activeElement
 import com.bumble.appyx.testing.junit4.util.MainDispatcherRule
 import com.bumble.appyx.testing.unit.common.helper.parentNodeTestHelper
 import com.google.common.truth.Truth.assertThat
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.appnav.di.RoomGraphFactory
 import io.element.android.appnav.di.TimelineBindings
 import io.element.android.appnav.room.RoomNavigationTarget
@@ -25,11 +26,14 @@ import io.element.android.appnav.room.joined.FakeJoinedRoomLoadedFlowNodeCallbac
 import io.element.android.appnav.room.joined.JoinedRoomLoadedFlowNode
 import io.element.android.features.forward.api.ForwardEntryPoint
 import io.element.android.features.forward.test.FakeForwardEntryPoint
+import io.element.android.features.home.api.SpaceFirstRoomProvider
 import io.element.android.features.messages.api.MessagesEntryPoint
 import io.element.android.features.roomdetails.api.RoomDetailsEntryPoint
 import io.element.android.features.space.api.SpaceEntryPoint
 import io.element.android.libraries.architecture.childNode
+import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
+import io.element.android.libraries.matrix.test.A_ROOM_ID_2
 import io.element.android.libraries.matrix.test.A_SESSION_ID
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
@@ -41,9 +45,12 @@ import io.element.android.services.analytics.test.watchers.FakeAnalyticsSendMess
 import io.element.android.services.appnavstate.api.ActiveRoomsHolder
 import io.element.android.services.appnavstate.test.FakeActiveRoomsHolder
 import io.element.android.services.appnavstate.test.FakeAppNavigationStateService
+import io.element.android.tests.testutils.lambda.lambdaRecorder
+import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -118,6 +125,7 @@ class JoinedRoomLoadedFlowNodeTest : RobolectricTest() {
         forwardEntryPoint: ForwardEntryPoint = FakeForwardEntryPoint(),
         activeRoomsHolder: ActiveRoomsHolder = FakeActiveRoomsHolder(),
         matrixClient: FakeMatrixClient = FakeMatrixClient(),
+        spaceFirstRoomProvider: SpaceFirstRoomProvider = SpaceFirstRoomProvider { null },
     ) = JoinedRoomLoadedFlowNode(
         buildContext = BuildContext.root(savedStateMap = null),
         plugins = plugins,
@@ -131,6 +139,7 @@ class JoinedRoomLoadedFlowNodeTest : RobolectricTest() {
         matrixClient = matrixClient,
         activeRoomsHolder = activeRoomsHolder,
         analyticsService = FakeAnalyticsService(),
+        spaceFirstRoomProvider = spaceFirstRoomProvider,
     )
 
     @Test
@@ -171,6 +180,25 @@ class JoinedRoomLoadedFlowNodeTest : RobolectricTest() {
         roomFlowNodeTestHelper.assertChildHasLifecycle(JoinedRoomLoadedFlowNode.NavTarget.Space, Lifecycle.State.CREATED)
         val spaceNode = roomFlowNode.childNode(JoinedRoomLoadedFlowNode.NavTarget.Space)!!
         assertThat(spaceNode.id).isEqualTo(spaceEntryPoint.nodeId)
+    }
+
+    @Test
+    fun `given a room flow node when initialized then it opens the first room of the space if it has one`() = runTest {
+        assumeTrue(LeveragersConfig.OPENS_FIRST_ROOM_OF_SPACES)
+        // GIVEN
+        val room = FakeJoinedRoom(baseRoom = FakeBaseRoom(updateMembersResult = {}, initialRoomInfo = aRoomInfo(isSpace = true)))
+        val replaceWithRoomResult = lambdaRecorder<RoomId, Unit> { }
+        val inputs = JoinedRoomLoadedFlowNode.Inputs(room, RoomNavigationTarget.Root())
+        val roomFlowNode = createJoinedRoomLoadedFlowNode(
+            plugins = listOf(inputs, FakeJoinedRoomLoadedFlowNodeCallback(replaceWithRoomResult = replaceWithRoomResult)),
+            spaceFirstRoomProvider = { A_ROOM_ID_2 },
+        )
+        // WHEN
+        roomFlowNode.parentNodeTestHelper()
+
+        // THEN
+        assertThat(roomFlowNode.backstack.activeElement).isEqualTo(JoinedRoomLoadedFlowNode.NavTarget.OpeningSpace)
+        replaceWithRoomResult.assertions().isCalledOnce().with(value(A_ROOM_ID_2))
     }
 
     @Test

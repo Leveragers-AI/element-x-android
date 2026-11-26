@@ -123,6 +123,13 @@ object LeveragersConfig {
     const val SHOWS_TYPING_BUBBLE = true
 
     /**
+     * Whether a joined space opens its first room instead of its page, as on Element Web and in the iOS app: the
+     * first room in the home screen's order, a direct message only when the space has no other room, never an invite.
+     * The page stays for a space with no room or whose rooms aren't known yet.
+     */
+    const val OPENS_FIRST_ROOM_OF_SPACES = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.
