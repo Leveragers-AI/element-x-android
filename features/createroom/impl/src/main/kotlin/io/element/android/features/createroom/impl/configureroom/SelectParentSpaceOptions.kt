@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.createroom.impl.R
 import io.element.android.libraries.designsystem.components.avatar.Avatar
@@ -124,19 +125,22 @@ private fun SelectParentSpaceBottomSheet(
         hasDivider = false
     )
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        item {
-            ListItem(
-                content = {
-                    Text(
-                        text = stringResource(R.string.screen_create_room_space_selection_no_space_option),
-                        maxLines = 1
-                    )
-                },
-                trailingContent = ListItemContent.RadioButton(
-                    selected = selectedSpace == null
-                ),
-                onClick = { onSelectSpace(null) },
-            )
+        // Leveragers: every room belongs to a space, so no "Do not add to a space" in the simplified room creation.
+        if (!LeveragersConfig.HAS_SIMPLIFIED_ROOM_CREATION) {
+            item {
+                ListItem(
+                    content = {
+                        Text(
+                            text = stringResource(R.string.screen_create_room_space_selection_no_space_option),
+                            maxLines = 1
+                        )
+                    },
+                    trailingContent = ListItemContent.RadioButton(
+                        selected = selectedSpace == null
+                    ),
+                    onClick = { onSelectSpace(null) },
+                )
+            }
         }
         for (space in spaces) {
             item {
