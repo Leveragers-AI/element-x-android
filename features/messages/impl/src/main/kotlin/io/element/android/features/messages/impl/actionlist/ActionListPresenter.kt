@@ -238,7 +238,8 @@ class DefaultActionListPresenter(
             if (timelineItem.isRemote) {
                 add(TimelineItemAction.CopyLink)
             }
-            if (isDeveloperModeEnabled) {
+            // Leveragers: no "View source" with the simplified settings, which hide the developer options.
+            if (isDeveloperModeEnabled && !LeveragersConfig.HAS_SIMPLIFIED_SETTINGS) {
                 add(TimelineItemAction.ViewSource)
             }
             // Leveragers: no reporting.

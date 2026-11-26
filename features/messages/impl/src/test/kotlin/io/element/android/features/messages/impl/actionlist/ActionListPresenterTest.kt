@@ -52,6 +52,7 @@ import io.element.android.tests.testutils.test
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.test.runTest
+import org.junit.Assume.assumeFalse
 import org.junit.Rule
 import org.junit.Test
 
@@ -72,6 +73,8 @@ class ActionListPresenterTest {
 
     @Test
     fun `present - compute for message from me redacted`() = runTest {
+        // Leveragers: only "View source" would be offered, which the simplified settings hide.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
         val presenter = createActionListPresenter(isDeveloperModeEnabled = true)
         presenter.test {
             val initialState = awaitItem()
@@ -96,7 +99,7 @@ class ActionListPresenterTest {
                     displayEmojiReactions = false,
                     verifiedUserSendFailure = VerifiedUserSendFailure.None,
                     actions = persistentListOf(
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -108,6 +111,8 @@ class ActionListPresenterTest {
 
     @Test
     fun `present - compute for message from others redacted`() = runTest {
+        // Leveragers: only "View source" would be offered, which the simplified settings hide.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
         val presenter = createActionListPresenter(isDeveloperModeEnabled = true)
         presenter.test {
             val initialState = awaitItem()
@@ -136,7 +141,7 @@ class ActionListPresenterTest {
                     displayEmojiReactions = false,
                     verifiedUserSendFailure = VerifiedUserSendFailure.None,
                     actions = persistentListOf(
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -181,7 +186,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -228,7 +233,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -273,7 +278,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -319,7 +324,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         *reportContentAction,
                         TimelineItemAction.Redact,
                     ),
@@ -366,7 +371,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         *reportContentAction,
                         TimelineItemAction.Redact,
                     ),
@@ -413,7 +418,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -460,7 +465,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -506,7 +511,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -548,7 +553,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Forward,
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -593,7 +598,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.AddCaption,
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -638,7 +643,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Forward,
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -682,7 +687,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Reply,
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -760,7 +765,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyCaption,
                         TimelineItemAction.RemoveCaption,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -808,7 +813,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Pin,
                         TimelineItemAction.CopyCaption,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         *reportContentAction,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -821,6 +826,8 @@ class ActionListPresenterTest {
 
     @Test
     fun `present - compute for a state item in debug build`() = runTest {
+        // Leveragers: only "View source" would be offered, which the simplified settings hide.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
         val presenter = createActionListPresenter(isDeveloperModeEnabled = true)
         presenter.test {
             val initialState = awaitItem()
@@ -848,7 +855,7 @@ class ActionListPresenterTest {
                     displayEmojiReactions = false,
                     verifiedUserSendFailure = VerifiedUserSendFailure.None,
                     actions = persistentListOf(
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -962,7 +969,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.Edit,
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -1014,7 +1021,7 @@ class ActionListPresenterTest {
                         TimelineItemAction.CopyLink,
                         TimelineItemAction.Unpin,
                         TimelineItemAction.CopyText,
-                        TimelineItemAction.ViewSource,
+                        *viewSourceAction,
                         TimelineItemAction.Redact,
                     ),
                     recentEmojis = suggestedEmojis,
@@ -1285,6 +1292,8 @@ class ActionListPresenterTest {
 
     @Test
     fun `present - compute for call notify`() = runTest {
+        // Leveragers: only "View source" would be offered, which the simplified settings hide.
+        assumeFalse(LeveragersConfig.HAS_SIMPLIFIED_SETTINGS)
         val presenter = createActionListPresenter(isDeveloperModeEnabled = true)
         presenter.test {
             val initialState = awaitItem()
@@ -1311,7 +1320,7 @@ class ActionListPresenterTest {
                     displayEmojiReactions = false,
                     verifiedUserSendFailure = VerifiedUserSendFailure.None,
                     actions = persistentListOf(
-                        TimelineItemAction.ViewSource
+                        *viewSourceAction,
                     ),
                     recentEmojis = suggestedEmojis,
                 )
@@ -1611,6 +1620,10 @@ private fun createActionListPresenter(
         getRecentEmojis = recentEmojis,
     )
 }
+
+// Leveragers: "View source" is only offered without the simplified settings.
+private val viewSourceAction: Array<TimelineItemAction> =
+    if (LeveragersConfig.HAS_SIMPLIFIED_SETTINGS) emptyArray() else arrayOf(TimelineItemAction.ViewSource)
 
 // Leveragers: "Report" is only offered when blocking and reporting are allowed.
 private val reportContentAction: Array<TimelineItemAction> =
