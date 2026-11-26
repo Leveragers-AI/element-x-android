@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2026 Leveragers.
+ * Copyright (c) 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial.
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -9,14 +9,12 @@ package io.element.android.features.home.impl.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -152,39 +150,6 @@ private fun RoundHeaderButton(
             contentDescription = contentDescription,
             tint = iconTint,
             modifier = Modifier.size(iconSize),
-        )
-    }
-}
-
-/**
- * Leveragers: the room list search, floating at the bottom of the simplified home screen, as in the iOS app.
- */
-@Composable
-fun LeveragersHomeSearchButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .navigationBarsPadding()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(ElementTheme.colors.bgSubtleSecondary)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Icon(
-            imageVector = CompoundIcons.Search(),
-            contentDescription = null,
-            tint = ElementTheme.colors.iconSecondary,
-            modifier = Modifier.size(20.dp),
-        )
-        Text(
-            text = stringResource(CommonStrings.action_search),
-            style = ElementTheme.typography.fontBodyLgRegular,
-            color = ElementTheme.colors.textSecondary,
         )
     }
 }
