@@ -483,8 +483,7 @@ private fun StandardLayout(
             NotEncryptedBadge()
             Spacer(Modifier.height(4.dp))
         }
-        Row(
-            verticalAlignment = Alignment.Bottom,
+        Column(
             modifier = if (isFloating) {
                 Modifier
                     .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp)
@@ -493,6 +492,18 @@ private fun StandardLayout(
             } else {
                 Modifier
             },
+        ) {
+        // Leveragers: in the floating capsule, the reply preview (or the editing header) spans its whole width, above
+        // the attachment button, the text field and the send button.
+        if (isFloating && composerMode is MessageComposerMode.Special) {
+            ComposerModeView(
+                composerMode = composerMode,
+                onResetComposerMode = onResetComposerMode,
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp),
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.Bottom,
         ) {
             when (composerMode) {
                 is MessageComposerMode.Attachment -> {
@@ -557,6 +568,7 @@ private fun StandardLayout(
                         composerMode = composerMode,
                         onResetComposerMode = onResetComposerMode,
                         isTextEmpty = true,
+                        isFloating = isFloating,
                     ) {
                         movableVoiceRecording()
                     }
@@ -577,6 +589,7 @@ private fun StandardLayout(
                 onClick = endButtonParams.endButtonClick,
                 content = endButtonParams.endButtonContent,
             )
+        }
         }
     }
 }
@@ -683,7 +696,8 @@ private fun TextInputBox(
             .fillMaxSize()
             .then(modifier),
     ) {
-        if (composerMode is MessageComposerMode.Special) {
+        // Leveragers: in the floating capsule, the composer mode is shown above the whole row.
+        if (composerMode is MessageComposerMode.Special && !isFloating) {
             ComposerModeView(
                 composerMode = composerMode,
                 onResetComposerMode = onResetComposerMode,
