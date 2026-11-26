@@ -133,6 +133,8 @@ class TypingNotificationPresenterTest {
             assertThat(oneMemberTypingState.typingMembers.first()).isEqualTo(
                 TypingRoomMember(
                     disambiguatedDisplayName = "Alice Doe (@bob:server.org)",
+                    userId = A_USER_ID_2.value,
+                    avatarUrl = aKnownRoomMember.avatarUrl,
                 )
             )
             // User stops typing
@@ -171,6 +173,8 @@ class TypingNotificationPresenterTest {
             assertThat(finalState.typingMembers.first()).isEqualTo(
                 TypingRoomMember(
                     disambiguatedDisplayName = "Alice Doe (@bob:server.org)",
+                    userId = A_USER_ID_2.value,
+                    avatarUrl = aKnownRoomMember.avatarUrl,
                 )
             )
         }

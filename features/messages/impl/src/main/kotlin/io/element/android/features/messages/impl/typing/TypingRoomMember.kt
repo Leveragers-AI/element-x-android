@@ -10,4 +10,8 @@ package io.element.android.features.messages.impl.typing
 
 data class TypingRoomMember(
     val disambiguatedDisplayName: String,
+    /** Leveragers: for the avatar of the typing bubble. */
+    val userId: String = disambiguatedDisplayName,
+    /** Leveragers: for the avatar of the typing bubble. */
+    val avatarUrl: String? = null,
 )

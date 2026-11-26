@@ -86,6 +86,8 @@ class TypingNotificationPresenter(
 private fun RoomMember.toTypingRoomMember(): TypingRoomMember {
     return TypingRoomMember(
         disambiguatedDisplayName = disambiguatedDisplayName,
+        userId = userId.value,
+        avatarUrl = avatarUrl,
     )
 }
 

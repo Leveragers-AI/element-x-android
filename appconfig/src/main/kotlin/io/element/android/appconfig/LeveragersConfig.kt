@@ -117,6 +117,12 @@ object LeveragersConfig {
     const val CLOSES_KEYBOARD_ON_TIMELINE_TAP = true
 
     /**
+     * Whether "… is typing" is a bubble with the avatars of the people typing and Element Web's animated dots,
+     * without the names (still read by screen readers), as in the iOS app and the Element Web config.
+     */
+    const val SHOWS_TYPING_BUBBLE = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.

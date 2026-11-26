@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.messages.impl.R
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -51,6 +52,16 @@ fun TypingNotificationView(
     modifier: Modifier = Modifier,
 ) {
     val displayNotifications = state.typingMembers.isNotEmpty() && state.renderTypingNotifications
+    if (LeveragersConfig.SHOWS_TYPING_BUBBLE) {
+        TypingBubble(
+            typingMembers = state.typingMembers,
+            visible = displayNotifications,
+            reserveSpace = state.reserveSpace,
+            accessibilityText = computeTypingNotificationText(state.typingMembers).text,
+            modifier = modifier,
+        )
+        return
+    }
 
     @Suppress("ModifierNaming")
     @Composable

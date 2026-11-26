@@ -44,6 +44,9 @@ enum class AvatarSize(val dp: Dp) {
     TimelineRoom(32.dp),
     TimelineSender(32.dp),
     TimelineReadReceipt(16.dp),
+
+    /** Leveragers: the people typing, next to the typing dots. */
+    TypingIndicator(22.dp),
     TimelineThreadLatestEventSender(24.dp),
 
     ComposerAlert(32.dp),
