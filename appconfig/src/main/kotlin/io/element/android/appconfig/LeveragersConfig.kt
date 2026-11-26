@@ -111,6 +111,12 @@ object LeveragersConfig {
     const val HAS_FLOATING_COMPOSER = true
 
     /**
+     * Whether a tap on the conversation closes the keyboard, as in other messaging apps. The gesture doesn't prevent
+     * links, reactions nor long presses.
+     */
+    const val CLOSES_KEYBOARD_ON_TIMELINE_TAP = true
+
+    /**
      * Whether the user can share their location (composer menu, "Location sharing" in the settings).
      * The app also does not declare the location permissions (see app/src/main/AndroidManifest.xml), so Android
      * refuses any access to the location.

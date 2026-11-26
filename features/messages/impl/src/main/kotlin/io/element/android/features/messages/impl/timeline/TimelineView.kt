@@ -22,6 +22,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -65,7 +68,11 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.stringResource
@@ -79,6 +86,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.ResolveVerifiedUserSendFailureView
@@ -215,6 +223,7 @@ fun TimelineView(
                     modifier = Modifier
                         .fillMaxSize()
                         .nestedScroll(nestedScrollConnection)
+                        .then(if (LeveragersConfig.CLOSES_KEYBOARD_ON_TIMELINE_TAP) Modifier.closeKeyboardOnTap() else Modifier)
                         .testTag(TestTags.timeline),
                     state = lazyListState,
                     reverseLayout = true,
@@ -765,5 +774,26 @@ private class CenterStartOfAnchorPositionProvider(
             x = x.coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0)),
             y = y.coerceIn(0, (windowSize.height - popupContentSize.height).coerceAtLeast(0)),
         )
+    }
+}
+
+/**
+ * Leveragers: hides the keyboard on a tap, without consuming it, so that links, reactions and long presses still work.
+ */
+@Composable
+private fun Modifier.closeKeyboardOnTap(): Modifier {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    return pointerInput(Unit) {
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            val up = waitForUpOrCancellation(pass = PointerEventPass.Initial) ?: return@awaitEachGesture
+            val isTap = (up.position - down.position).getDistance() < viewConfiguration.touchSlop &&
+                up.uptimeMillis - down.uptimeMillis < viewConfiguration.longPressTimeoutMillis
+            if (isTap) {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            }
+        }
     }
 }
