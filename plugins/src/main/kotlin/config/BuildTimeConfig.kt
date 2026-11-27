@@ -34,6 +34,7 @@ object BuildTimeConfig {
     val PUSHER_APP_ID_RELEASE: String? = null
     val PUSHER_APP_ID_DEBUG: String? = null
     val PUSHER_APP_ID_NIGHTLY: String? = null
-    const val ELEMENT_LINKS_ENABLED: Boolean = true
+    // Leveragers: Android must not offer our app for app.element.io / mobile.element.io links (Ashad, 27/11/2026).
+    const val ELEMENT_LINKS_ENABLED: Boolean = false
     const val ELEMENT_MOBILE_LINK_PATH: String = "/element/"
 }

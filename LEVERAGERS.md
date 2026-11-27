@@ -11,7 +11,7 @@ des suppressions, comme `AppSettings` sur iOS : le code reste en place et les re
 
 | Patch | But | Fichiers d'Element touchés |
 |---|---|---|
-| Identité | Identifiant `com.leveragers.agents`, nom « Agents » ; retour de connexion `com.leveragers.agents:/` ; `client_uri` `https://leveragers.com`, logo sur agents.leveragers.com, conditions et confidentialité sur www.leveragers.com, copyright = ce dépôt ; Firebase retiré (pas de push pour l'instant ; UnifiedPush reste compilé, inactif sans distributeur) ; statistiques PostHog/Sentry remplacées par le module no-op ; « Agents » à la place d'« Element » pour l'app de bureau et l'app mobile | `plugins/src/main/kotlin/config/BuildTimeConfig.kt`, `plugins/src/main/kotlin/ModulesConfig.kt`, `appconfig/.../ApplicationConfig.kt` |
+| Identité | Identifiant `com.leveragers.agents`, nom « Agents » ; liens `app.element.io` / `mobile.element.io` non pris en charge (`ELEMENT_LINKS_ENABLED = false`, interrupteur ajouté par Element en v26.11.1) ; retour de connexion `com.leveragers.agents:/` ; `client_uri` `https://leveragers.com`, logo sur agents.leveragers.com, conditions et confidentialité sur www.leveragers.com, copyright = ce dépôt ; Firebase retiré (pas de push pour l'instant ; UnifiedPush reste compilé, inactif sans distributeur) ; statistiques PostHog/Sentry remplacées par le module no-op ; « Agents » à la place d'« Element » pour l'app de bureau et l'app mobile | `plugins/src/main/kotlin/config/BuildTimeConfig.kt`, `plugins/src/main/kotlin/ModulesConfig.kt`, `appconfig/.../ApplicationConfig.kt` |
 | Serveur et fonctions | `chat.leveragers.com` seul (un bouton sur l'écran d'accueil, ni « Créer un compte » ni QR), rapports de bug coupés, appels masqués, salons publics refusés, entrée « Parcourir les salons » retirée ; tests des modules touchés alignés | `features/enterprise/impl-foss/.../Default{,Session}EnterpriseService.kt` (+ tests), `appconfig/.../OnBoardingConfig.kt`, `features/login/impl/.../onboarding/OnBoardingPresenter.kt` (+ test), `features/startchat/impl/.../root/StartChatView.kt` (+ test) |
 | Push absent | Pas de fenêtre d'erreur « No distributors available » / « No providers available » à chaque connexion : sans push dans cette version, c'est l'état attendu | `appnav/.../loggedin/LoggedInView.kt` |
 | Marque | Icône adaptative (fond cyan `#2CF8E5`, marque bleu nuit `#0A082B`, monochrome), icônes PNG Android 7 et Play Store ; logo de l'écran d'accueil (`onboarding_logo`, 110 dp) ; icône et couleur des notifications | `appicon/element/src/**`, `app/src/main/res/{drawable/onboarding_logo.xml,raw/leveragers_keep.xml}`, `libraries/designsystem/src/main/res/drawable/ic_notification.xml`, `appconfig/.../NotificationConfig.kt` |
@@ -65,8 +65,7 @@ Numéros de version : ceux d'Element pour l'instant (à revoir avant une deuxiè
 ## Pas encore fait
 
 - Push (Firebase à nous + passerelle Sygnal commune avec iOS).
-- Filtres de liens d'Element restés dans le manifeste (`app.element.io`, `mobile.element.io`, `element://`,
-  `elementx://`) : sans vérification possible pour notre identifiant, Android peut proposer un choix d'app.
+- Schéma `element://` d'Element encore dans le manifeste (Element ne le rend pas désactivable) : Android peut proposer un choix d'app pour ces liens. Les liens `app.element.io` et `mobile.element.io` sont coupés depuis v26.11.1 (`ELEMENT_LINKS_ENABLED = false`), `elementx://` a été retiré par Element.
 - Permissions liées aux fonctions coupées (appels plein écran, installation d'APK) : à retirer avant le Play Store,
   pour éviter les déclarations correspondantes. Celles de la position sont déjà retirées ; le service de partage de
   position en direct reste déclaré (jamais lancé).
