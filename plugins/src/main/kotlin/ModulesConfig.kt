@@ -16,9 +16,10 @@ object ModulesConfig {
         includeUnifiedPush = BuildTimeConfig.PUSH_CONFIG_INCLUDE_UNIFIED_PUSH,
     )
 
-    // Leveragers: analytics follow the configured keys on every build (none are set, so the no-op module is used),
-    // instead of always shipping Element's Posthog and Sentry on non-enterprise builds.
-    val analyticsConfig: AnalyticsConfig = run {
+    // Leveragers: analytics follow the configured keys on every build, enterprise or not (none are set, so the
+    // no-op module is used), instead of always shipping Element's Posthog and Sentry on non-enterprise builds.
+    fun analyticsConfig(isEnterpriseBuild: Boolean): AnalyticsConfig = run {
+        println("Analytics follow the configured keys (enterprise build: $isEnterpriseBuild)")
         // Is Posthog configuration available?
         val withPosthog = BuildTimeConfig.SERVICES_POSTHOG_APIKEY.isNullOrEmpty().not() &&
             BuildTimeConfig.SERVICES_POSTHOG_HOST.isNullOrEmpty().not()
