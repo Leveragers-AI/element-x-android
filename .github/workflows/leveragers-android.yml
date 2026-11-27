@@ -19,6 +19,35 @@ env:
   CI_GRADLE_ARG_PROPERTIES: --stacktrace --no-daemon --no-configuration-cache
 
 jobs:
+  # Next to the build, not before it: a failure here shows in the run without holding back the APK.
+  screen-tests:
+    name: Unit tests of the screens Leveragers changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup build environment
+        uses: ./.github/actions/setup-build
+        with:
+          free-disk-space: 'true'
+          gradle-cache-read-only: 'true'
+      - name: Unit tests of the screens the UI redesign changes
+        run: >-
+          ./gradlew
+          :appnav:testDebugUnitTest
+          :features:home:impl:testDebugUnitTest
+          :features:createroom:impl:testDebugUnitTest
+          :features:messages:impl:testDebugUnitTest
+          :features:preferences:impl:testDebugUnitTest
+          :features:roomdetails:impl:testDebugUnitTest
+          :features:joinroom:impl:testDebugUnitTest
+          :features:userprofile:shared:testDebugUnitTest
+          :libraries:textcomposer:impl:testDebugUnitTest
+          --continue
+          $CI_GRADLE_ARG_PROPERTIES
+
   build:
     name: Build signed APKs
     runs-on: ubuntu-latest

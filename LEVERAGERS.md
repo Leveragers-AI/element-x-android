@@ -1,9 +1,10 @@
 # Patchs Leveragers sur Element X Android
 
 « Agents by Leveragers » : la branche `leveragers` part de l'étiquette officielle Element `v26.11.0`
-(`5d1af53`, 06/11/2026), avec ces patchs par-dessus. Ce fichier sert à celui qui les rejoue sur une nouvelle
-étiquette (rebase) : une ligne par patch, avec les fichiers d'Element qu'il touche. Règle : une étiquette publiée
-depuis au moins 14 jours. L'app iOS jumelle est `Leveragers-AI/element-x-ios` (mêmes choix).
+(`5d1af53`, 06/11/2026) ; chaque nouvelle version d'Element y entre par une fusion de son étiquette (jamais de
+rebase), en dernier `v26.11.1` (17/11/2026). Ce fichier liste nos patchs par-dessus, une ligne par patch avec les
+fichiers d'Element qu'il touche : c'est la liste à vérifier à chaque fusion (skill `element-fork-sync` de
+Leveragers). Règle de livraison : une étiquette publiée depuis au moins 14 jours, sauf correctif de sécurité. L'app iOS jumelle est `Leveragers-AI/element-x-ios` (mêmes choix).
 
 Les fonctions d'Element masquées le sont par des interrupteurs de `appconfig/.../LeveragersConfig.kt` plutôt que par
 des suppressions, comme `AppSettings` sur iOS : le code reste en place et les rebases restent simples.
