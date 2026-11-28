@@ -157,4 +157,15 @@ object LeveragersConfig {
      * app/src/main/AndroidManifest.xml): Google Play only allows it for calling and alarm apps.
      */
     const val ASKS_FOR_FULL_SCREEN_NOTIFICATIONS = false
+
+    /**
+     * Public key to which the app seals a copy of every recovery key it creates, sent to our chat server so that
+     * Leveragers can give the key back to its owner (RecoveryKeyEscrow.kt): P-256, uncompressed point (65 bytes),
+     * base64url without padding. Its private half is only on Leveragers' hub2. Same value as
+     * `leveragers_recovery_key_recipient` in our Element Web's config.json.
+     * With a key, the app also sets up recovery without asking at the first sign-in that creates the account's
+     * encryption identity and after "Reset identity", as our Element Web does (SilentRecoverySetup.kt).
+     * Empty: no copy, no silent setup, the app behaves like Element X.
+     */
+    const val RECOVERY_KEY_RECIPIENT = "BC7DZZ8JpxHe0k_JRmWaGxZJPkDCnVcjen_bMnyRP6gEkl2KoD0TtIQ9K2c3SGQaEyqv2AckbzKLSI7j2Z0PL9c"
 }
