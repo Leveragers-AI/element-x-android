@@ -1,0 +1,16 @@
+# Leveragers: Google Play screenshots, after the sign-in with the review account (apple-review), the app switched to
+# French and the status bar in demo mode by run.sh. If the account is asked to confirm its identity on this new
+# device, the first screenshot shows it and the flow stops there.
+appId: com.leveragers.agents
+---
+- extendedWaitUntil:
+    visible: "Démonstration|.*identité.*|.*digital identity.*"
+    timeout: 60000
+- waitForAnimationToEnd
+- takeScreenshot: shots/store-1-accueil
+- tapOn: "Démonstration"
+- extendedWaitUntil:
+    visible: "Agent de démonstration"
+    timeout: 30000
+- waitForAnimationToEnd
+- takeScreenshot: shots/store-2-salon

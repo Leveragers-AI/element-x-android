@@ -24,6 +24,15 @@ on:
         description: Sign-in e-mail of a throwaway test account (default = the TEST_ACCOUNT_EMAIL secret); its password is TEST_ACCOUNT_PASSWORD
         type: string
         required: false
+      account:
+        description: Account (test = the TEST_ACCOUNT_* secrets; review = apple-review, the store reviewers' account, password in REVIEW_ACCOUNT_PASSWORD)
+        type: choice
+        options: [ test, review ]
+        default: test
+      store_screenshots:
+        description: After the sign-in, take the Google Play screenshots (app in French, 1080x1920 phone, clean status bar)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -77,12 +86,14 @@ jobs:
         continue-on-error: true
         env:
           POLL_NOW: ${{ inputs.poll_now && '1' || '0' }}
-          TEST_EMAIL: ${{ inputs.email || secrets.TEST_ACCOUNT_EMAIL }}
-          TEST_PASSWORD: ${{ secrets.TEST_ACCOUNT_PASSWORD }}
+          TEST_EMAIL: ${{ inputs.account == 'review' && 'apple-review' || inputs.email || secrets.TEST_ACCOUNT_EMAIL }}
+          TEST_PASSWORD: ${{ inputs.account == 'review' && secrets.REVIEW_ACCOUNT_PASSWORD || secrets.TEST_ACCOUNT_PASSWORD }}
+          STORE_SCREENSHOTS: ${{ inputs.store_screenshots && '1' || '0' }}
         with:
           api-level: 33
           arch: x86_64
-          profile: pixel_7_pro
+          # Google Play refuses screenshots whose long side is more than twice the short side (Pixel 7 Pro: 2.17).
+          profile: ${{ inputs.store_screenshots && 'pixel_2' || 'pixel_7_pro' }}
           target: google_apis
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
@@ -92,7 +103,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: emulator-signin-${{ inputs.app }}-poll${{ inputs.poll_now && '1' || '0' }}
+          name: emulator-signin-${{ inputs.app }}-${{ inputs.account }}-poll${{ inputs.poll_now && '1' || '0' }}
           path: |
             shots/**
             ~/.maestro/tests/**/*.png

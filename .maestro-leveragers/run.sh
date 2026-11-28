@@ -20,6 +20,21 @@ echo "maestro status: $STATUS"
 SIGNED_IN=$?
 echo "signed-in check (POLL_NOW=${POLL_NOW:-0}): $SIGNED_IN"
 [ "$STATUS" = "0" ] && STATUS=$SIGNED_IN
+# Google Play screenshots (STORE_SCREENSHOTS=1): the app in French (per-app language, Android 13) and a clean status
+# bar (System UI demo mode: fixed time, full battery and signal, no notification icons).
+if [ "${STORE_SCREENSHOTS:-0}" = "1" ]; then
+  adb shell cmd locale set-app-locales "$PKG" --locales fr-FR
+  adb shell settings put global sysui_demo_allowed 1
+  adb shell am broadcast -a com.android.systemui.demo -e command enter >/dev/null
+  adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 0941 >/dev/null
+  adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100 -e plugged false >/dev/null
+  adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 >/dev/null
+  adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e datatype none -e level 4 >/dev/null
+  adb shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false >/dev/null
+  sleep 5
+  ~/.maestro/bin/maestro test .maestro-leveragers/store-screenshots.yaml
+  echo "store screenshots: $?"
+fi
 capture() {
   adb exec-out screencap -p > "shots/$1.png"
   adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
