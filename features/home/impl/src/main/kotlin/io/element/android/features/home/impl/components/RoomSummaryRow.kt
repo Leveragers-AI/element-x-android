@@ -394,11 +394,12 @@ private fun MessagePreviewAndIndicatorRow(
                 val contentDescription = stringResource(CommonStrings.a11y_notifications_new_messages)
                 UnreadIndicatorAtom(
                     color = tint,
-                    // Leveragers: a simple dot for unread messages.
                     count = room.unreadIndicatorCount(
-                        showUnreadCount = showUnreadCount && !LeveragersConfig.HAS_LIGHT_ROOM_ROWS,
+                        showUnreadCount = showUnreadCount,
                         showAllActivity = showAllActivity,
                     ),
+                    // Leveragers: Element's badge with the count for the rooms that notify, a quieter dot for the others.
+                    dotIndicatorSize = if (LeveragersConfig.HAS_LIGHT_ROOM_ROWS) 9.dp else 12.dp,
                     contentDescription = contentDescription,
                 )
             }
