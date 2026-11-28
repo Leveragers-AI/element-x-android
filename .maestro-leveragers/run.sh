@@ -23,7 +23,12 @@ echo "signed-in check (POLL_NOW=${POLL_NOW:-0}): $SIGNED_IN"
 # Google Play screenshots (STORE_SCREENSHOTS=1): the app in French (per-app language, Android 13) and a clean status
 # bar (System UI demo mode: fixed time, full battery and signal, no notification icons).
 if [ "${STORE_SCREENSHOTS:-0}" = "1" ]; then
+  # The app may stay on the spinning sign-in button after the hand-back although the session exists (seen with
+  # Element's official app too): reopen it, as a user would, before switching it to French.
+  adb shell am force-stop "$PKG"
   adb shell cmd locale set-app-locales "$PKG" --locales fr-FR
+  adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+  sleep 30
   adb shell settings put global sysui_demo_allowed 1
   adb shell am broadcast -a com.android.systemui.demo -e command enter >/dev/null
   adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 0941 >/dev/null
