@@ -39,6 +39,7 @@ import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.encryption.IdentityOAuthResetHandle
 import io.element.android.libraries.matrix.api.encryption.IdentityPasswordResetHandle
+import io.element.android.libraries.matrix.api.encryption.LeveragersRecoverySetup
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -55,6 +56,7 @@ class ResetIdentityFlowNode(
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
     private val sessionEnterpriseService: SessionEnterpriseService,
+    private val leveragersRecoverySetup: LeveragersRecoverySetup,
 ) : BaseFlowNode<ResetIdentityFlowNode.NavTarget>(
     backstack = BackStack(initialElement = NavTarget.Root, savedStateMap = buildContext.savedStateMap),
     buildContext = buildContext,
@@ -82,6 +84,8 @@ class ResetIdentityFlowNode(
         super.onBuilt()
 
         resetIdentityFlowManager.whenResetIsDone {
+            // Leveragers: recovery set up without asking after the reset, as on our Element Web (SilentRecoverySetup.kt).
+            leveragersRecoverySetup.onIdentityReset()
             callback.onDone()
         }
     }

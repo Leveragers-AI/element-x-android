@@ -17,8 +17,10 @@ import io.element.android.features.ftue.impl.state.FtueStep
 import io.element.android.features.ftue.impl.state.InternalFtueState
 import io.element.android.features.lockscreen.api.LockScreenService
 import io.element.android.features.lockscreen.test.FakeLockScreenService
+import io.element.android.libraries.matrix.api.encryption.LeveragersRecoverySetup
 import io.element.android.libraries.matrix.api.verification.SessionVerificationService
 import io.element.android.libraries.matrix.api.verification.SessionVerifiedStatus
+import io.element.android.libraries.matrix.test.encryption.FakeLeveragersRecoverySetup
 import io.element.android.libraries.matrix.test.verification.FakeSessionVerificationService
 import io.element.android.libraries.permissions.api.PermissionStateProvider
 import io.element.android.libraries.permissions.test.FakePermissionStateProvider
@@ -33,6 +35,14 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class DefaultFtueServiceTest {
+    @Test
+    fun `Leveragers - the session start starts the silent recovery setup, once`() = runTest {
+        val leveragersRecoverySetup = FakeLeveragersRecoverySetup()
+        createDefaultFtueService(leveragersRecoverySetup = leveragersRecoverySetup)
+        assertThat(leveragersRecoverySetup.sessionStartedCount).isEqualTo(1)
+        assertThat(leveragersRecoverySetup.identityResetCount).isEqualTo(0)
+    }
+
     @Test
     fun `given any check being false and session verification state being loaded, FtueState is Incomplete`() = runTest {
         val sessionVerificationService = FakeSessionVerificationService().apply {
@@ -200,6 +210,7 @@ internal fun TestScope.createDefaultFtueService(
     sessionPreferencesStore: SessionPreferencesStore = InMemorySessionPreferencesStore(),
     // First version where notification permission is required
     sdkIntVersion: Int = Build.VERSION_CODES.TIRAMISU,
+    leveragersRecoverySetup: LeveragersRecoverySetup = FakeLeveragersRecoverySetup(),
 ) = DefaultFtueService(
     sessionCoroutineScope = backgroundScope,
     sessionVerificationService = sessionVerificationService,
@@ -208,4 +219,5 @@ internal fun TestScope.createDefaultFtueService(
     permissionStateProvider = permissionStateProvider,
     lockScreenService = lockScreenService,
     sessionPreferencesStore = sessionPreferencesStore,
+    leveragersRecoverySetup = leveragersRecoverySetup,
 )

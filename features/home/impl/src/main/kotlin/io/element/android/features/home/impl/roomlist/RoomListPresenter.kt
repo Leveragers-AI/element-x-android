@@ -57,6 +57,7 @@ import io.element.android.libraries.featureflag.api.ShowAllActivityInRoomListFea
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsState
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.encryption.LeveragersRecoverySetup
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.roomlist.RoomList
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
@@ -107,6 +108,7 @@ class RoomListPresenter(
     private val featureFlagService: FeatureFlagService,
     private val sessionStore: SessionStore,
     private val webRoomListSectionsLoader: WebRoomListSectionsLoader,
+    private val leveragersRecoverySetup: LeveragersRecoverySetup,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -234,11 +236,13 @@ class RoomListPresenter(
     ): State<SecurityBannerState> {
         val currentSecurityBannerDismissed by rememberUpdatedState(securityBannerDismissed)
         val recoveryState by encryptionService.recoveryStateStateFlow.collectAsState()
+        val holdsBackRecoveryBanner by leveragersRecoverySetup.holdsBackRecoveryBanner.collectAsState()
         return remember {
             derivedStateOf {
                 calculateBannerState(
                     securityBannerDismissed = currentSecurityBannerDismissed,
                     recoveryState = recoveryState,
+                    holdsBackRecoveryBanner = holdsBackRecoveryBanner,
                 )
             }
         }
@@ -247,13 +251,15 @@ class RoomListPresenter(
     private fun calculateBannerState(
         securityBannerDismissed: Boolean,
         recoveryState: RecoveryState,
+        holdsBackRecoveryBanner: Boolean,
     ): SecurityBannerState {
         if (securityBannerDismissed) {
             return SecurityBannerState.None
         }
 
         when (recoveryState) {
-            RecoveryState.DISABLED -> return SecurityBannerState.SetUpRecovery
+            // Leveragers: not while the app sets up recovery without asking (SilentRecoverySetup.kt).
+            RecoveryState.DISABLED -> return if (holdsBackRecoveryBanner) SecurityBannerState.None else SecurityBannerState.SetUpRecovery
             RecoveryState.INCOMPLETE -> return SecurityBannerState.RecoveryKeyConfirmation
             RecoveryState.UNKNOWN,
             RecoveryState.WAITING_FOR_SYNC,

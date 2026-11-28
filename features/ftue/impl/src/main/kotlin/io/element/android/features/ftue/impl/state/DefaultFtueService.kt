@@ -18,6 +18,7 @@ import io.element.android.features.lockscreen.api.LockScreenService
 import io.element.android.libraries.core.coroutine.mapState
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
+import io.element.android.libraries.matrix.api.encryption.LeveragersRecoverySetup
 import io.element.android.libraries.matrix.api.verification.SessionVerificationService
 import io.element.android.libraries.matrix.api.verification.SessionVerifiedStatus
 import io.element.android.libraries.permissions.api.PermissionStateProvider
@@ -43,6 +44,7 @@ class DefaultFtueService(
     private val lockScreenService: LockScreenService,
     private val sessionVerificationService: SessionVerificationService,
     private val sessionPreferencesStore: SessionPreferencesStore,
+    leveragersRecoverySetup: LeveragersRecoverySetup,
 ) : FtueService {
     private val userNeedsToConfirmSessionVerificationSuccess = MutableStateFlow(false)
 
@@ -71,6 +73,8 @@ class DefaultFtueService(
             updateFtueStep()
         }
             .launchIn(sessionCoroutineScope)
+        // Leveragers: recovery set up without asking after a sign-in that created the identity (SilentRecoverySetup.kt).
+        leveragersRecoverySetup.onSessionStarted()
     }
 
     fun updateFtueStep() = sessionCoroutineScope.launch {
