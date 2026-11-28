@@ -1,5 +1,7 @@
 # Leveragers: our e-mail-first page on chat.leveragers.com, in the Chrome tab opened by the app, then the
-# "Presque terminé" page that hands the sign-in back to the app.
+# "Presque terminé" page that hands the sign-in back to the app. Accounts with a password (test and review accounts)
+# sign in with their username (no "@"): since 28/11 the page answers an e-mail address that opens no sign-in with
+# "Cette adresse n'ouvre pas de connexion ici".
 appId: ${APP_ID}
 ---
 - extendedWaitUntil:
@@ -10,6 +12,8 @@ appId: ${APP_ID}
 - tapOn:
     id: "email"
 - inputText: ${TEST_EMAIL}
+# On a small screen the keyboard hides the button, and Chrome then leaves it out of what Maestro sees.
+- hideKeyboard
 - tapOn:
     id: "submit"
 - extendedWaitUntil:

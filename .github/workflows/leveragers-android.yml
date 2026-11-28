@@ -161,7 +161,8 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         continue-on-error: true
         env:
-          TEST_EMAIL: ${{ secrets.TEST_ACCOUNT_EMAIL }}
+          # The username: the sign-in page no longer opens a password sign-in from this account's e-mail address.
+          TEST_EMAIL: essai-android-1
           TEST_PASSWORD: ${{ secrets.TEST_ACCOUNT_PASSWORD }}
         with:
           api-level: 33

@@ -21,7 +21,7 @@ on:
         type: boolean
         default: false
       email:
-        description: Sign-in e-mail of a throwaway test account (default = the TEST_ACCOUNT_EMAIL secret); its password is TEST_ACCOUNT_PASSWORD
+        description: Username of a throwaway test account (default essai-android-1); its password is TEST_ACCOUNT_PASSWORD
         type: string
         required: false
       account:
@@ -86,7 +86,7 @@ jobs:
         continue-on-error: true
         env:
           POLL_NOW: ${{ inputs.poll_now && '1' || '0' }}
-          TEST_EMAIL: ${{ inputs.account == 'review' && 'apple-review' || inputs.email || secrets.TEST_ACCOUNT_EMAIL }}
+          TEST_EMAIL: ${{ inputs.account == 'review' && 'apple-review' || inputs.email || 'essai-android-1' }}
           TEST_PASSWORD: ${{ inputs.account == 'review' && secrets.REVIEW_ACCOUNT_PASSWORD || secrets.TEST_ACCOUNT_PASSWORD }}
           STORE_SCREENSHOTS: ${{ inputs.store_screenshots && '1' || '0' }}
         with:
