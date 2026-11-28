@@ -68,6 +68,8 @@ if [ "${CHANGE_RECOVERY_KEY:-0}" = "1" ]; then
   # The copy of the new key leaves in the background: give it time before closing the app.
   sleep 30
   adb shell am force-stop "$PKG"
+  # Keep only the flow's own named screenshots, all taken while no key is on screen.
+  find "$CHANGE_DEBUG" -path '*takeScreenshot/shots/*' -name '1[234]-*.png' -exec cp {} shots/ \;
   rm -rf "$CHANGE_DEBUG"
   adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
   sleep 45
