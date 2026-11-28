@@ -465,10 +465,14 @@ class OnBoardingPresenterTest {
             awaitItem().eventSink(OnBoardingEvent.SetEmail("alice@"))
             consumeItemsUntilPredicate { it.emailSignIn?.email == "alice@" }.last()
                 .eventSink(OnBoardingEvent.SubmitEmail)
-            consumeItemsUntilPredicate { it.emailSignIn?.error == EmailSignInError.InvalidEmail }.last()
-                .eventSink(OnBoardingEvent.SetEmail("alice@example.com"))
-            val state = consumeItemsUntilPredicate { it.emailSignIn?.email == "alice@example.com" }.last()
-            assertThat(state.emailSignIn?.error).isNull()
+            consumeItemsUntilPredicate {
+                it.emailSignIn?.error == EmailSignInError.InvalidEmail && it.emailSignIn?.isLookingUp == false
+            }.last().eventSink(OnBoardingEvent.SetEmail("alice@example.com"))
+            // The two writes of SetEmail (email, then error) can be emitted one at a time: wait for both.
+            val state = consumeItemsUntilPredicate {
+                it.emailSignIn?.email == "alice@example.com" && it.emailSignIn?.error == null
+            }.last()
+            assertThat(state.emailSignIn).isEqualTo(anEmailSignInState(email = "alice@example.com"))
             cancelAndIgnoreRemainingEvents()
         }
     }

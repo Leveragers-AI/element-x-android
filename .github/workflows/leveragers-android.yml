@@ -56,6 +56,10 @@ jobs:
           ./gradlew :features:preferences:impl:testDebugUnitTest --tests '*ModerationAndSafetyViewTest' $CI_GRADLE_ARG_PROPERTIES
           ./gradlew :features:roomdetails:impl:testDebugUnitTest --tests '*RoomDetailsViewTest' $CI_GRADLE_ARG_PROPERTIES
           ./gradlew :features:userprofile:shared:testDebugUnitTest --tests '*UserProfileViewTest' $CI_GRADLE_ARG_PROPERTIES
+      # Gradle only prints the name of a failed test: its failure message and stack, from the JUnit results.
+      - name: Show the failed unit tests
+        if: failure()
+        run: grep -rlZ '<failure' --include='TEST-*.xml' . | xargs -0 -r grep -h -A25 '<failure' | head -300
       - name: Restore the signing key
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
