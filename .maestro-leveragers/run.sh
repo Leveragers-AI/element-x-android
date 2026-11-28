@@ -11,7 +11,14 @@ sleep 5
 adb install -r "$APK"
 adb shell dumpsys package "$PKG" | grep -E 'versionName|versionCode' | head -2
 mkdir -p shots ~/.maestro/tests
-~/.maestro/bin/maestro test -e TEST_EMAIL="$TEST_EMAIL" -e TEST_PASSWORD="$TEST_PASSWORD" "$FLOW"
+# The test front door of the emulator test APK (http://10.0.2.2:8080 in the app = port 8080 of this runner): an empty
+# folder, so every lookup answers 404 and the app goes on to the pro server (chat.leveragers.com), as the real front
+# door does for an address it has no file for.
+FRONT_DOOR_DIR="$(mktemp -d)"
+python3 -m http.server 8080 --bind 127.0.0.1 --directory "$FRONT_DOOR_DIR" >/dev/null 2>&1 &
+FRONT_DOOR_PID=$!
+sleep 1
+~/.maestro/bin/maestro test -e APP_EMAIL="${APP_EMAIL:-}" -e TEST_EMAIL="$TEST_EMAIL" -e TEST_PASSWORD="$TEST_PASSWORD" "$FLOW"
 STATUS=$?
 echo "maestro status: $STATUS"
 # Is the app signed in? Polled right away (POLL_NOW=1, as a user staring at the screen would not) or after 20 s.
@@ -57,6 +64,7 @@ adb shell am force-stop "$PKG"
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 sleep 45
 capture 11-after-relaunch
+kill "$FRONT_DOOR_PID" 2>/dev/null
 echo "--- maestro.log (tail) ---"
 find ~/.maestro/tests -name maestro.log -exec tail -n 40 {} + | grep -E 'COMPLETED|FAILED|SKIPPED|ERROR' | tail -30
 exit $STATUS

@@ -14,8 +14,10 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.AndroidComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import com.google.testing.junit.testparameterinjector.KotlinTestParameters.namedTestValues
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -26,6 +28,7 @@ import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
+import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.tests.testutils.EnsureNeverCalled
 import io.element.android.tests.testutils.EnsureNeverCalledWithParam
@@ -233,6 +236,58 @@ class OnboardingViewTest : RobolectricTestParameter() {
             )
         }
         eventSink.assertSingle(OnBoardingEvent.ClearError)
+    }
+
+    @Test
+    fun `with the email field - typing an email emits the expected event`() = runAndroidComposeUiTest {
+        val eventSink = EventsRecorder<OnBoardingEvent>()
+        setOnboardingView(
+            state = anOnBoardingState(
+                emailSignIn = anEmailSignInState(),
+                eventSink = eventSink,
+            ),
+        )
+        onNodeWithTag(TestTags.loginEmailUsername.value).performTextInput("alice@example.com")
+        eventSink.assertSingle(OnBoardingEvent.SetEmail("alice@example.com"))
+    }
+
+    @Test
+    fun `with the email field - clicking on continue emits the expected event`() = runAndroidComposeUiTest {
+        val eventSink = EventsRecorder<OnBoardingEvent>()
+        setOnboardingView(
+            state = anOnBoardingState(
+                emailSignIn = anEmailSignInState(email = "alice@example.com"),
+                eventSink = eventSink,
+            ),
+        )
+        clickOn(R.string.leveragers_sign_in_continue)
+        eventSink.assertSingle(OnBoardingEvent.SubmitEmail)
+    }
+
+    @Test
+    fun `with the email field - Element's sign in button is not shown`() = runAndroidComposeUiTest {
+        val eventSink = EventsRecorder<OnBoardingEvent>(expectEvents = false)
+        setOnboardingView(
+            state = anOnBoardingState(
+                emailSignIn = anEmailSignInState(),
+                eventSink = eventSink,
+            ),
+        )
+        onNodeWithTag(TestTags.onBoardingSignIn.value).assertDoesNotExist()
+        onNodeWithTag(TestTags.loginEmailUsername.value).assertExists()
+        onNodeWithTag(TestTags.loginContinue.value).assertExists()
+    }
+
+    @Test
+    fun `with the email field - the errors are shown`() = runAndroidComposeUiTest {
+        val eventSink = EventsRecorder<OnBoardingEvent>(expectEvents = false)
+        setOnboardingView(
+            state = anOnBoardingState(
+                emailSignIn = anEmailSignInState(email = "alice@example.com", error = EmailSignInError.FrontDoorUnreachable),
+                eventSink = eventSink,
+            ),
+        )
+        onNodeWithText(activity!!.getString(R.string.leveragers_sign_in_front_door_error)).assertExists()
     }
 
     private fun AndroidComposeUiTest<ComponentActivity>.setOnboardingView(

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Leveragers: French of values/leveragers.xml.
+  -->
+<resources>
+    <string name="leveragers_sign_in_email_label">"E-mail"</string>
+    <string name="leveragers_sign_in_continue">"Continuer"</string>
+    <string name="leveragers_sign_in_invalid_email">"Saisissez une adresse e-mail valide."</string>
+    <string name="leveragers_sign_in_front_door_error">"Connexion impossible pour le moment. Vérifiez votre connexion et réessayez."</string>
+</resources>

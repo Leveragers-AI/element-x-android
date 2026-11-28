@@ -1,5 +1,6 @@
-# Leveragers: sign in to chat.leveragers.com with the throwaway test account (Agents app). What the app shows
-# afterwards is captured by run.sh (screenshots and visible texts), before and after a relaunch.
+# Leveragers: sign in to chat.leveragers.com with the throwaway test account (Agents app): its email on the start
+# screen (the test front door started by run.sh sends it to chat.leveragers.com), then the chat sign-in page. What
+# the app shows afterwards is captured by run.sh (screenshots and visible texts), before and after a relaunch.
 appId: com.leveragers.agents
 ---
 - launchApp:
@@ -7,10 +8,18 @@ appId: com.leveragers.agents
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Sign in to chat.leveragers.com"
+    visible:
+      id: "login-email_username"
     timeout: 60000
 - takeScreenshot: shots/01-start
-- tapOn: "Sign in to chat.leveragers.com"
+- tapOn:
+    id: "login-email_username"
+- inputText: ${APP_EMAIL}
+# On a small screen the keyboard may hide the button.
+- hideKeyboard
+- takeScreenshot: shots/01b-email
+- tapOn:
+    id: "login-continue"
 - runFlow:
     file: web-signin.yaml
     env:

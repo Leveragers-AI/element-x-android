@@ -17,6 +17,10 @@ import io.element.android.features.login.impl.accesscontrol.DefaultAccountProvid
 import io.element.android.features.login.impl.accountprovider.AccountProviderDataSource
 import io.element.android.features.login.impl.accountprovider.SaveAccountProviderToHistory
 import io.element.android.features.login.impl.accountprovider.anAccountProviderDataSource
+import io.element.android.features.login.impl.frontdoor.FakeFrontDoorLookup
+import io.element.android.features.login.impl.frontdoor.FrontDoorLookup
+import io.element.android.features.login.impl.frontdoor.FrontDoorResult
+import io.element.android.features.login.impl.frontdoor.LastEmailStore
 import io.element.android.features.login.impl.localnetwork.LocalNetworkPermissionGate
 import io.element.android.features.login.impl.login.LoginModePresenter
 import io.element.android.libraries.architecture.AsyncData
@@ -33,6 +37,7 @@ import io.element.android.libraries.matrix.test.A_HOMESERVER_URL_2
 import io.element.android.libraries.matrix.test.A_LOGIN_HINT
 import io.element.android.libraries.matrix.test.accountprovider.anAccountProviderManaged
 import io.element.android.libraries.matrix.test.auth.FakeMatrixAuthenticationService
+import io.element.android.libraries.matrix.test.auth.aMatrixHomeServerDetails
 import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.libraries.oauth.api.OAuthActionFlow
 import io.element.android.libraries.oauth.test.FakeOAuthActionFlow
@@ -40,11 +45,13 @@ import io.element.android.libraries.permissions.api.PermissionsPresenter
 import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPermissionAdvisor
 import io.element.android.libraries.permissions.test.FakeLocalNetworkPermissionAdvisor
 import io.element.android.libraries.permissions.test.FakePermissionsPresenterFactory
+import io.element.android.libraries.preferences.test.FakePreferenceDataStoreFactory
 import io.element.android.libraries.preferences.test.InMemoryAppPreferencesStore
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
 import io.element.android.libraries.sessionstorage.test.aSessionData
 import io.element.android.tests.testutils.WarmUpRule
+import io.element.android.tests.testutils.consumeItemsUntilPredicate
 import io.element.android.tests.testutils.test
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -338,7 +345,136 @@ class OnBoardingPresenterTest {
             }
         }
     }
+
+    @Test
+    fun `present - email sign-in - the field starts empty`() = runTest {
+        val presenter = createPresenter()
+        presenter.test {
+            assertThat(awaitItem().emailSignIn).isEqualTo(anEmailSignInState())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - email sign-in - the last email sent pre-fills the field`() = runTest {
+        val lastEmailStore = aLastEmailStore()
+        lastEmailStore.set("bob@example.com")
+        val presenter = createPresenter(lastEmailStore = lastEmailStore)
+        presenter.test {
+            val state = consumeItemsUntilPredicate { it.emailSignIn?.email == "bob@example.com" }.last()
+            assertThat(state.emailSignIn?.error).isNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - email sign-in - the server of the front door starts the sign-in with the email as login hint`() = runTest {
+        val setHomeserverCalls = mutableListOf<String>()
+        val authenticationService = FakeMatrixAuthenticationService(
+            setHomeserverResult = {
+                setHomeserverCalls.add(it)
+                Result.success(aMatrixHomeServerDetails(supportsOAuthLogin = true))
+            },
+        )
+        val lookups = mutableListOf<String>()
+        val guardedServers = mutableListOf<AccountProvider>()
+        val lastEmailStore = aLastEmailStore()
+        val accountProviderDataSource = anAccountProviderDataSource()
+        val presenter = createPresenter(
+            enterpriseService = FakeEnterpriseService(
+                isAllowedToConnectToAccountProviderResult = {
+                    guardedServers.add(it)
+                    true
+                },
+            ),
+            loginModePresenter = createLoginModePresenter(
+                authenticationService = authenticationService,
+            ),
+            accountProviderDataSource = accountProviderDataSource,
+            frontDoorLookup = FakeFrontDoorLookup { email ->
+                lookups.add(email)
+                FrontDoorResult.Server("theseis.chat.leveragers.com")
+            },
+            lastEmailStore = lastEmailStore,
+        )
+        presenter.test {
+            awaitItem().eventSink(OnBoardingEvent.SetEmail(" alice@theseis.fr "))
+            consumeItemsUntilPredicate { it.emailSignIn?.email == " alice@theseis.fr " }.last()
+                .eventSink(OnBoardingEvent.SubmitEmail)
+            consumeItemsUntilPredicate { it.loginModeState.loginMode is AsyncData.Success }
+            assertThat(lookups).containsExactly("alice@theseis.fr")
+            assertThat(guardedServers).containsExactly(AccountProvider.Generic("theseis.chat.leveragers.com"))
+            assertThat(setHomeserverCalls).containsExactly("theseis.chat.leveragers.com")
+            assertThat(authenticationService.getOAuthUrlLoginHint).isEqualTo("alice@theseis.fr")
+            assertThat(accountProviderDataSource.flow.first()).isEqualTo(AccountProvider.Generic("theseis.chat.leveragers.com"))
+            assertThat(lastEmailStore.get()).isEqualTo("alice@theseis.fr")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - email sign-in - a front door error keeps the email and does not sign in`() = runTest {
+        val lastEmailStore = aLastEmailStore()
+        val presenter = createPresenter(
+            frontDoorLookup = FakeFrontDoorLookup { FrontDoorResult.Unreachable },
+            lastEmailStore = lastEmailStore,
+        )
+        presenter.test {
+            awaitItem().eventSink(OnBoardingEvent.SetEmail("alice@example.com"))
+            consumeItemsUntilPredicate { it.emailSignIn?.email == "alice@example.com" }.last()
+                .eventSink(OnBoardingEvent.SubmitEmail)
+            val state = consumeItemsUntilPredicate {
+                it.emailSignIn?.error != null && it.emailSignIn?.isLookingUp == false
+            }.last()
+            assertThat(state.emailSignIn).isEqualTo(
+                anEmailSignInState(email = "alice@example.com", error = EmailSignInError.FrontDoorUnreachable)
+            )
+            assertThat(state.loginModeState.loginMode).isEqualTo(AsyncData.Uninitialized)
+            assertThat(lastEmailStore.get()).isNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - email sign-in - a server refused by the guard is a front door error`() = runTest {
+        val presenter = createPresenter(
+            enterpriseService = FakeEnterpriseService(
+                isAllowedToConnectToAccountProviderResult = { false },
+            ),
+            frontDoorLookup = FakeFrontDoorLookup { FrontDoorResult.Server("matrix.org") },
+        )
+        presenter.test {
+            awaitItem().eventSink(OnBoardingEvent.SetEmail("alice@example.com"))
+            consumeItemsUntilPredicate { it.emailSignIn?.email == "alice@example.com" }.last()
+                .eventSink(OnBoardingEvent.SubmitEmail)
+            val state = consumeItemsUntilPredicate {
+                it.emailSignIn?.error != null && it.emailSignIn?.isLookingUp == false
+            }.last()
+            assertThat(state.emailSignIn?.error).isEqualTo(EmailSignInError.FrontDoorUnreachable)
+            assertThat(state.loginModeState.loginMode).isEqualTo(AsyncData.Uninitialized)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - email sign-in - an invalid email shows the error until the email changes`() = runTest {
+        val presenter = createPresenter(
+            frontDoorLookup = FakeFrontDoorLookup { FrontDoorResult.InvalidEmail },
+        )
+        presenter.test {
+            awaitItem().eventSink(OnBoardingEvent.SetEmail("alice@"))
+            consumeItemsUntilPredicate { it.emailSignIn?.email == "alice@" }.last()
+                .eventSink(OnBoardingEvent.SubmitEmail)
+            consumeItemsUntilPredicate { it.emailSignIn?.error == EmailSignInError.InvalidEmail }.last()
+                .eventSink(OnBoardingEvent.SetEmail("alice@example.com"))
+            val state = consumeItemsUntilPredicate { it.emailSignIn?.email == "alice@example.com" }.last()
+            assertThat(state.emailSignIn?.error).isNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }
+
+private fun aLastEmailStore() = LastEmailStore(FakePreferenceDataStoreFactory())
 
 private fun createPresenter(
     params: OnBoardingNode.Params = OnBoardingNode.Params(
@@ -354,6 +490,8 @@ private fun createPresenter(
     onBoardingLogoResIdProvider: OnBoardingLogoResIdProvider = OnBoardingLogoResIdProvider { null },
     sessionStore: SessionStore = InMemorySessionStore(),
     accountProviderDataSource: AccountProviderDataSource = anAccountProviderDataSource(),
+    frontDoorLookup: FrontDoorLookup = FakeFrontDoorLookup(),
+    lastEmailStore: LastEmailStore = aLastEmailStore(),
 ) = OnBoardingPresenter(
     params = params,
     buildMeta = buildMeta,
@@ -367,6 +505,8 @@ private fun createPresenter(
     onBoardingLogoResIdProvider = onBoardingLogoResIdProvider,
     sessionStore = sessionStore,
     accountProviderDataSource = accountProviderDataSource,
+    frontDoorLookup = frontDoorLookup,
+    lastEmailStore = lastEmailStore,
 )
 
 fun createLoginModePresenter(

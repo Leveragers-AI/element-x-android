@@ -11,6 +11,7 @@ package io.element.android.features.enterprise.impl
 import androidx.compose.ui.graphics.Color
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.appconfig.FrontDoorConfig
 import io.element.android.appconfig.LeveragersConfig
 import io.element.android.compound.colors.LeveragersColors
 import io.element.android.compound.colors.SemanticColorsLightDark
@@ -40,11 +41,12 @@ class DefaultEnterpriseService(
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
 
-    // Leveragers: the app only signs in to our chat server; the start screen then shows a single button.
-    override fun accountProviderAllowList(): List<AccountProvider> = listOf(LEVERAGERS_ACCOUNT_PROVIDER)
+    // Leveragers: no fixed server and no manual choice: the start screen asks for the email, our front door gives the
+    // chat server, and the app only signs in to the pro server or a server named under .leveragers.com.
+    override fun accountProviderAllowList(): List<AccountProvider> = emptyList()
     override fun canConnectToAnyAccountProvider(): Boolean = false
     override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) =
-        accountProviderAllowList().any { it.matches(accountProvider) }
+        FrontDoorConfig.isAllowedServer(accountProvider.serverNameOrBaseUrl())
     override suspend fun isElementProEnforced(serverName: String): Boolean = withContext(dispatchers.io) {
         val temporaryMatrixClient = temporaryMatrixClientFactory.create(serverName).getOrElse { return@withContext false }
         temporaryMatrixClient.use { client ->
@@ -91,15 +93,6 @@ internal val LEVERAGERS_SEMANTIC_COLORS = if (LeveragersConfig.HAS_LEVERAGERS_PA
 } else {
     SemanticColorsLightDark.default
 }
-
-/**
- * Leveragers: the only server the app connects to.
- */
-internal val LEVERAGERS_ACCOUNT_PROVIDER = AccountProvider.Managed(
-    serverName = "chat.leveragers.com",
-    baseUrl = "https://chat.leveragers.com",
-    canUseServerName = true,
-)
 
 /**
  * A minimal version of the enterprise config that only contains the fields we need to check if Element Pro is enforced.

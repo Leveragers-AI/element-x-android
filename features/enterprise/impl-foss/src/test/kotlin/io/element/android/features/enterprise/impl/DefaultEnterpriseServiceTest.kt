@@ -28,9 +28,9 @@ import org.junit.Test
 
 class DefaultEnterpriseServiceTest {
     @Test
-    fun accountProviderAllowList() = runTest {
+    fun `accountProviderAllowList is empty, the server comes from the front door`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.accountProviderAllowList()).containsExactly(LEVERAGERS_ACCOUNT_PROVIDER)
+        assertThat(defaultEnterpriseService.accountProviderAllowList()).isEmpty()
     }
 
     @Test
@@ -40,11 +40,28 @@ class DefaultEnterpriseServiceTest {
     }
 
     @Test
-    fun `isAllowedToConnectToAccountProvider is true only for chat leveragers com`() = runTest {
+    fun `isAllowedToConnectToAccountProvider is true only for the pro server and servers under leveragers com`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric("chat.leveragers.com"))).isTrue()
-        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric("https://chat.leveragers.com/"))).isTrue()
-        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric("matrix.org"))).isFalse()
+        listOf(
+            "chat.leveragers.com",
+            "https://chat.leveragers.com/",
+            "theseis.chat.leveragers.com",
+            "a-b.leveragers.com",
+        ).forEach {
+            assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric(it))).isTrue()
+        }
+        listOf(
+            "matrix.org",
+            "leveragers.com",
+            "chat.leveragers.com.example.org",
+            "chatleveragers.com",
+            "http://chat.leveragers.com",
+            "chat.leveragers.com:8448",
+            "-a.leveragers.com",
+            "a_b.leveragers.com",
+        ).forEach {
+            assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric(it))).isFalse()
+        }
     }
 
     @Test

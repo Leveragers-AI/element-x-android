@@ -1,5 +1,6 @@
-# Leveragers: sign-in check on an emulator without rebuilding, either with the APK of an earlier run of
-# "Agents by Leveragers (APK)", or with Element's official Element X (control). Screenshots only are published
+# Leveragers: sign-in check on an emulator without rebuilding, either with the emulator test APK of an earlier run of
+# "Agents by Leveragers (APK)" (run with emulator_test: its email screen reads the test front door on the runner), or
+# with Element's official Element X (control). Screenshots only are published
 # (Maestro's own log records the typed text, and artifacts of a public repository are downloadable by anyone
 # signed in to GitHub).
 name: Agents by Leveragers (emulator sign-in)
@@ -13,7 +14,7 @@ on:
         options: [ agents, element-official ]
         default: agents
       apk_run_id:
-        description: Run id of "Agents by Leveragers (APK)" whose APK to test (app = agents)
+        description: Run id of "Agents by Leveragers (APK)", run with emulator_test, whose emulator test APK to test (app = agents)
         type: string
         required: false
       poll_now:
@@ -51,7 +52,7 @@ jobs:
         if: ${{ inputs.app == 'agents' }}
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: agents-apks
+          name: agents-emulator-test-apk
           path: apks
           run-id: ${{ inputs.apk_run_id }}
           github-token: ${{ github.token }}
@@ -86,6 +87,9 @@ jobs:
         continue-on-error: true
         env:
           POLL_NOW: ${{ inputs.poll_now && '1' || '0' }}
+          # Typed in the app's email screen (Agents): the test front door answers 404, so the app signs in to the pro
+          # server (chat.leveragers.com) with this address as login hint; the chat page then takes the username.
+          APP_EMAIL: ${{ format('{0}@essai.invalid', inputs.account == 'review' && 'apple-review' || inputs.email || 'essai-android-1') }}
           TEST_EMAIL: ${{ inputs.account == 'review' && 'apple-review' || inputs.email || 'essai-android-1' }}
           TEST_PASSWORD: ${{ inputs.account == 'review' && secrets.REVIEW_ACCOUNT_PASSWORD || secrets.TEST_ACCOUNT_PASSWORD }}
           STORE_SCREENSHOTS: ${{ inputs.store_screenshots && '1' || '0' }}

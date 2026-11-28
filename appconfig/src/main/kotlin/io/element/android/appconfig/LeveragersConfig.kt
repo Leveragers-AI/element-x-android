@@ -141,8 +141,18 @@ object LeveragersConfig {
      * Whether the start screen opens the sign-in page of our server by itself, once, as a tap on its button would
      * (first launch, or after signing out). Not when adding an account. If the page is closed, the start screen and
      * its button stay there to try again.
+     * Off since 28/11/2026: the start screen asks for the email first (see [SIGNS_IN_WITH_EMAIL]), there is no fixed
+     * server to open.
      */
-    const val OPENS_SIGN_IN_AUTOMATICALLY = true
+    const val OPENS_SIGN_IN_AUTOMATICALLY = false
+
+    /**
+     * Whether the start screen asks for the email address and "Continue" instead of Element's sign-in button. The app
+     * asks our front door (FrontDoorConfig.BASE_URL) for the chat server of the address, then starts Element's own
+     * sign-in on that server with the address as login hint, as a sign-in link would. The last address is remembered
+     * on the device to pre-fill the field.
+     */
+    const val SIGNS_IN_WITH_EMAIL = true
 
     /**
      * Whether creating a room is simplified: the first space the user can add rooms to is selected by default, and the

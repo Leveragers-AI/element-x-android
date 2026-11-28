@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -133,7 +134,8 @@ private fun AddFirstAccountScaffold(
     modifier: Modifier = Modifier,
 ) {
     OnBoardingPage(
-        modifier = modifier,
+        // Leveragers: keep the email field above the keyboard.
+        modifier = if (state.emailSignIn != null) modifier.imePadding() else modifier,
         renderBackground = state.onBoardingLogoResId == null,
         content = {
             Box(
@@ -295,7 +297,16 @@ private fun OnBoardingButtons(
             )
         }
         val defaultAccountProvider = state.defaultAccountProvider
-        if (defaultAccountProvider == null) {
+        val emailSignIn = state.emailSignIn
+        if (emailSignIn != null) {
+            // Leveragers: the email field and "Continue" replace Element's sign-in button.
+            EmailSignInForm(
+                state = emailSignIn,
+                isSigningIn = isLoading,
+                onEmailChange = { state.eventSink(OnBoardingEvent.SetEmail(it)) },
+                onSubmit = { state.eventSink(OnBoardingEvent.SubmitEmail) },
+            )
+        } else if (defaultAccountProvider == null) {
             Button(
                 text = stringResource(id = signInButtonStringRes),
                 onClick = {

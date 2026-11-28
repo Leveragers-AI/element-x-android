@@ -29,6 +29,16 @@ android {
         buildConfig = true
     }
 
+    defaultConfig {
+        // Leveragers: the front door address of the emulator test build only, given by the Gradle property
+        // leveragersFrontDoorTestUrl (see LEVERAGERS.md). Empty in every other build, which then uses
+        // FrontDoorConfig.BASE_URL (https://login.leveragers.com).
+        buildConfigFieldStr(
+            name = "LEVERAGERS_FRONT_DOOR_TEST_URL",
+            value = project.findProperty("leveragersFrontDoorTestUrl")?.toString().orEmpty(),
+        )
+    }
+
     buildTypes {
         val elementClassicPackageKey = "elementClassicPackage"
         val elementClassicPackage = "im.vector.app"
@@ -73,6 +83,11 @@ dependencies {
     implementation(projects.libraries.uiUtils)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.webkit)
+    // Leveragers: the front door lookup and the last email typed (email-first sign-in).
+    implementation(platform(libs.network.okhttp.bom))
+    implementation(libs.network.okhttp)
+    implementation(libs.serialization.json)
+    implementation(libs.androidx.datastore.preferences)
     api(projects.features.login.api)
 
     testCommonDependencies(libs, true)
@@ -85,4 +100,5 @@ dependencies {
     testImplementation(projects.libraries.sessionStorage.test)
     testImplementation(libs.androidx.camera.camera2)
     testImplementation(libs.androidx.camera.lifecycle)
+    testImplementation(libs.network.mockwebserver)
 }

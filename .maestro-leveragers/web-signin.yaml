@@ -11,6 +11,8 @@ appId: ${APP_ID}
 - takeScreenshot: shots/02-email-page
 - tapOn:
     id: "email"
+# The page may show the app's login_hint (the address typed in the app) in the field: the username replaces it.
+- eraseText: 80
 - inputText: ${TEST_EMAIL}
 # On a small screen the keyboard hides the button, and Chrome then leaves it out of what Maestro sees.
 - hideKeyboard

@@ -24,8 +24,12 @@ import dev.zacsweers.metro.AssistedInject
 import io.element.android.appconfig.LeveragersConfig
 import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.features.enterprise.api.EnterpriseService
+import io.element.android.features.login.api.LoginParams
 import io.element.android.features.login.impl.accesscontrol.DefaultAccountProviderAccessControl
 import io.element.android.features.login.impl.accountprovider.AccountProviderDataSource
+import io.element.android.features.login.impl.frontdoor.FrontDoorLookup
+import io.element.android.features.login.impl.frontdoor.FrontDoorResult
+import io.element.android.features.login.impl.frontdoor.LastEmailStore
 import io.element.android.features.login.impl.login.LoginModeEvent
 import io.element.android.features.login.impl.login.LoginModeState
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
@@ -49,6 +53,8 @@ class OnBoardingPresenter(
     private val onBoardingLogoResIdProvider: OnBoardingLogoResIdProvider,
     private val sessionStore: SessionStore,
     private val accountProviderDataSource: AccountProviderDataSource,
+    private val frontDoorLookup: FrontDoorLookup,
+    private val lastEmailStore: LastEmailStore,
 ) : Presenter<OnBoardingState> {
     @AssistedFactory
     interface Factory {
@@ -112,6 +118,50 @@ class OnBoardingPresenter(
 
         val loginModeState = loginModePresenter.present()
 
+        // Leveragers: the email field (LeveragersConfig.SIGNS_IN_WITH_EMAIL), pre-filled with the last address sent.
+        var email by rememberSaveable { mutableStateOf("") }
+        var emailError by remember { mutableStateOf<EmailSignInError?>(null) }
+        var isLookingUp by remember { mutableStateOf(false) }
+        if (LeveragersConfig.SIGNS_IN_WITH_EMAIL) {
+            LaunchedEffect(Unit) {
+                val lastEmail = lastEmailStore.get()
+                if (lastEmail != null && email.isEmpty()) {
+                    email = lastEmail
+                }
+            }
+        }
+
+        // Leveragers: the front door gives the chat server of the address, then sign-in starts as from a sign-in
+        // link (LoginParams): on that server, with the address as login hint. Never the pro server on a failure.
+        fun submitEmail() = localCoroutineScope.launch {
+            isLookingUp = true
+            emailError = null
+            val trimmedEmail = email.trim()
+            when (val result = frontDoorLookup.lookup(trimmedEmail)) {
+                is FrontDoorResult.Server -> {
+                    val loginParams = LoginParams(accountProvider = result.serverName, loginHint = trimmedEmail)
+                    val accountProvider = AccountProvider.Generic(loginParams.accountProvider)
+                    if (enterpriseService.isAllowedToConnectToAccountProvider(accountProvider)) {
+                        lastEmailStore.set(trimmedEmail)
+                        accountProviderDataSource.setAccountProvider(accountProvider)
+                        loginModeState.eventSink(
+                            LoginModeEvent.Submit(
+                                isAccountCreation = false,
+                                homeserverUrl = accountProvider.serverNameOrBaseUrl(),
+                                resolvedHomeserverUrl = null,
+                                loginHint = loginParams.loginHint,
+                            )
+                        )
+                    } else {
+                        emailError = EmailSignInError.FrontDoorUnreachable
+                    }
+                }
+                FrontDoorResult.InvalidEmail -> emailError = EmailSignInError.InvalidEmail
+                FrontDoorResult.Unreachable -> emailError = EmailSignInError.FrontDoorUnreachable
+            }
+            isLookingUp = false
+        }
+
         fun handleEvent(event: OnBoardingEvent) {
             when (event) {
                 is OnBoardingEvent.OnSignIn -> localCoroutineScope.launch {
@@ -127,6 +177,13 @@ class OnBoardingPresenter(
                     )
                 }
                 OnBoardingEvent.ClearError -> loginModeState.eventSink(LoginModeEvent.ClearError)
+                is OnBoardingEvent.SetEmail -> {
+                    email = event.email
+                    emailError = null
+                }
+                OnBoardingEvent.SubmitEmail -> if (!isLookingUp) {
+                    submitEmail()
+                }
                 OnBoardingEvent.OnVersionClick -> {
                     if (canReportBug) {
                         if (multipleTapToUnlock.unlock(localCoroutineScope)) {
@@ -163,6 +220,15 @@ class OnBoardingPresenter(
             loginModeState = loginModeState,
             version = buildMeta.versionName,
             onBoardingLogoResId = onBoardingLogoResId,
+            emailSignIn = if (LeveragersConfig.SIGNS_IN_WITH_EMAIL) {
+                EmailSignInState(
+                    email = email,
+                    error = emailError,
+                    isLookingUp = isLookingUp,
+                )
+            } else {
+                null
+            },
             eventSink = ::handleEvent,
         )
     }

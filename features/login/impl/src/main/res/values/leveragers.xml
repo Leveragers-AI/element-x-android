@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Leveragers: texts of the email field of the start screen (see LEVERAGERS.md). Kept out of Localazy's files
+  ~ (localazy.xml, translations.xml), which are regenerated at each sync.
+  -->
+<resources>
+    <string name="leveragers_sign_in_email_label">"Email"</string>
+    <string name="leveragers_sign_in_continue">"Continue"</string>
+    <string name="leveragers_sign_in_invalid_email">"Enter a valid email address."</string>
+    <string name="leveragers_sign_in_front_door_error">"Can't reach sign-in. Check your connection and try again."</string>
+</resources>

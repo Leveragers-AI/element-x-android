@@ -26,6 +26,8 @@ data class OnBoardingState(
     val version: String,
     @DrawableRes
     val onBoardingLogoResId: Int?,
+    // Leveragers: the email field shown instead of Element's sign-in button, null when the switch is off.
+    val emailSignIn: EmailSignInState?,
     val loginModeState: LoginModeState,
     val eventSink: (OnBoardingEvent) -> Unit,
 ) {

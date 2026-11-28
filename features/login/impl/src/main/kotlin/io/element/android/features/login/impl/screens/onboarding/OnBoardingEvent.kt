@@ -17,4 +17,8 @@ sealed interface OnBoardingEvent {
 
     data object OnVersionClick : OnBoardingEvent
     data object ClearError : OnBoardingEvent
+
+    // Leveragers: the email field of the start screen.
+    data class SetEmail(val email: String) : OnBoardingEvent
+    data object SubmitEmail : OnBoardingEvent
 }

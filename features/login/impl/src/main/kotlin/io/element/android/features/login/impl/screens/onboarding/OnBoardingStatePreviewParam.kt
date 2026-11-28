@@ -38,6 +38,14 @@ open class OnBoardingStatePreviewParam : PreviewParameterProvider<OnBoardingStat
                 showBackButton = true,
                 showDeveloperSettings = true,
             ),
+            anOnBoardingState(
+                customLogoResId = R.drawable.sample_background,
+                emailSignIn = anEmailSignInState(),
+            ),
+            anOnBoardingState(
+                customLogoResId = R.drawable.sample_background,
+                emailSignIn = anEmailSignInState(email = "alice@example.com", error = EmailSignInError.FrontDoorUnreachable),
+            ),
         )
 }
 
@@ -54,6 +62,7 @@ fun anOnBoardingState(
     version: String = "1.0.0",
     @DrawableRes
     customLogoResId: Int? = null,
+    emailSignIn: EmailSignInState? = null,
     loginModeState: LoginModeState = aLoginModeState(),
     eventSink: (OnBoardingEvent) -> Unit = {},
 ) = OnBoardingState(
@@ -69,5 +78,16 @@ fun anOnBoardingState(
     version = version,
     loginModeState = loginModeState,
     onBoardingLogoResId = customLogoResId,
+    emailSignIn = emailSignIn,
     eventSink = eventSink,
+)
+
+fun anEmailSignInState(
+    email: String = "",
+    error: EmailSignInError? = null,
+    isLookingUp: Boolean = false,
+) = EmailSignInState(
+    email = email,
+    error = error,
+    isLookingUp = isLookingUp,
 )
