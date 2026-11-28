@@ -85,11 +85,13 @@ class FullScreenIntentPermissionsPresenter(
         }
 
         // Leveragers: nothing to ask for when the app does not use full-screen notifications (no calls): no banner,
-        // no entry in the notification settings.
+        // no entry in the notification settings. Both states are still read first, so that the presenter keeps
+        // recomposing when they change, as upstream (a constant false on the left of && would skip the reads).
         val asksForPermission = LeveragersConfig.ASKS_FOR_FULL_SCREEN_NOTIFICATIONS
+        val wouldDisplayBanner = !isBannerDismissed && !isGranted
         return FullScreenIntentPermissionsState(
             permissionGranted = isGranted || !asksForPermission,
-            shouldDisplayBanner = asksForPermission && !isBannerDismissed && !isGranted,
+            shouldDisplayBanner = wouldDisplayBanner && asksForPermission,
             eventSink = ::handleEvent,
         )
     }
