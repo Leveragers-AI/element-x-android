@@ -1,0 +1,36 @@
+# Leveragers: "Change recovery key" in the settings (Settings > Encryption > Change recovery key > Generate), after the
+# sign-in, so that the copy of the new key reaches the chat server (LEVERAGERS.md, "Clé de récupération gardée").
+# The new key is on screen between "Generate" and "Continue": no screenshot there (the artifacts of this public
+# repository are readable by anyone); run.sh closes the app and deletes Maestro's own files of this flow afterwards.
+appId: com.leveragers.agents
+---
+- extendedWaitUntil:
+    visible: "Settings"
+    timeout: 60000
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: "Encryption"
+    timeout: 30000
+- tapOn: "Encryption"
+- extendedWaitUntil:
+    visible: "Change recovery key"
+    timeout: 90000
+- takeScreenshot: shots/12-encryption-settings
+- tapOn: "Change recovery key"
+- extendedWaitUntil:
+    visible: "Generate a new recovery key"
+    timeout: 30000
+- takeScreenshot: shots/13-change-recovery-key
+- tapOn: "Generate a new recovery key"
+- extendedWaitUntil:
+    visible: "Save recovery key"
+    timeout: 90000
+- tapOn: "Done"
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 30000
+- tapOn: "Continue"
+- extendedWaitUntil:
+    visible: "Change recovery key"
+    timeout: 30000
+- takeScreenshot: shots/14-encryption-settings-after-change

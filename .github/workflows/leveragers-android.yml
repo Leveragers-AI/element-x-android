@@ -44,6 +44,15 @@ jobs:
           :features:startchat:impl:testDebugUnitTest
           :libraries:fullscreenintent:impl:testDebugUnitTest
           $CI_GRADLE_ARG_PROPERTIES
+      # The recovery key kept by Leveragers (LEVERAGERS.md, "Clé de récupération gardée"): sealing (shared test vector),
+      # sending and its retries, silent setup at the first sign-in and after a reset, "Set up recovery" banner held back.
+      - name: Unit tests of the recovery key copy
+        run: >-
+          ./gradlew
+          :libraries:matrix:impl:testDebugUnitTest --tests '*RecoveryKeyEscrowTest' --tests '*SilentRecoverySetupTest'
+          :features:ftue:impl:testDebugUnitTest --tests '*DefaultFtueServiceTest'
+          :features:home:impl:testDebugUnitTest --tests '*RoomListPresenterTest'
+          $CI_GRADLE_ARG_PROPERTIES
       # The screens whose entries depend on LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING (blocking and reporting,
       # needed for Google Play): their tests check the entries match the switch.
       - name: Unit tests of the blocking and reporting entries

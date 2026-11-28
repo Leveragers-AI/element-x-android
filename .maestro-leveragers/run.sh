@@ -57,6 +57,23 @@ adb shell am force-stop "$PKG"
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 sleep 45
 capture 11-after-relaunch
+# "Change recovery key" in the settings (CHANGE_RECOVERY_KEY=1, LEVERAGERS.md "Clé de récupération gardée"). The new
+# key is on screen during one step: Maestro's own files of this flow (screenshots of a failed step, view hierarchy) go
+# to a folder deleted right after, and the app is closed before the next capture (its visible texts reach the log).
+if [ "${CHANGE_RECOVERY_KEY:-0}" = "1" ]; then
+  CHANGE_DEBUG="$(mktemp -d)"
+  ~/.maestro/bin/maestro test --debug-output "$CHANGE_DEBUG" .maestro-leveragers/change-recovery-key.yaml
+  CHANGE=$?
+  echo "change recovery key: $CHANGE"
+  # The copy of the new key leaves in the background: give it time before closing the app.
+  sleep 30
+  adb shell am force-stop "$PKG"
+  rm -rf "$CHANGE_DEBUG"
+  adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+  sleep 45
+  capture 15-after-change-relaunch
+  [ "$STATUS" = "0" ] && STATUS=$CHANGE
+fi
 echo "--- maestro.log (tail) ---"
 find ~/.maestro/tests -name maestro.log -exec tail -n 40 {} + | grep -E 'COMPLETED|FAILED|SKIPPED|ERROR' | tail -30
 exit $STATUS

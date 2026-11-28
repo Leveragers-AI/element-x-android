@@ -33,6 +33,10 @@ on:
         description: After the sign-in, take the Google Play screenshots (app in French, 1080x1920 phone, clean status bar)
         type: boolean
         default: false
+      change_recovery_key:
+        description: After the sign-in, "Change recovery key" in the settings (Agents; the copy of the new key goes to the chat server)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -89,6 +93,7 @@ jobs:
           TEST_EMAIL: ${{ inputs.account == 'review' && 'apple-review' || inputs.email || 'essai-android-1' }}
           TEST_PASSWORD: ${{ inputs.account == 'review' && secrets.REVIEW_ACCOUNT_PASSWORD || secrets.TEST_ACCOUNT_PASSWORD }}
           STORE_SCREENSHOTS: ${{ inputs.store_screenshots && '1' || '0' }}
+          CHANGE_RECOVERY_KEY: ${{ inputs.change_recovery_key && '1' || '0' }}
         with:
           api-level: 33
           arch: x86_64
