@@ -16,7 +16,7 @@ object BuildTimeConfig {
     val URL_WEBSITE: String? = "https://leveragers.com"
     val URL_LOGO: String? = "https://agents.leveragers.com/vector-icons/1024.png"
     val URL_COPYRIGHT: String? = "https://github.com/Leveragers-AI/element-x-android"
-    val URL_ACCEPTABLE_USE: String? = "https://www.leveragers.com/legal/mentions-legales"
+    val URL_ACCEPTABLE_USE: String? = "https://www.leveragers.com/legal/politique-de-moderation-du-contenu"
     val URL_PRIVACY: String? = "https://www.leveragers.com/legal/politique-de-confidentialite"
     val URL_POLICY: String? = "https://www.leveragers.com/legal/politique-de-confidentialite"
     val SERVICES_MAPTILER_BASE_URL: String? = null

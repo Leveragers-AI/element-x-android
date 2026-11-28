@@ -38,6 +38,7 @@ des suppressions, comme `AppSettings` sur iOS : le code reste en place et les re
 | Clavier | Un tap sur la conversation ferme le clavier, sans gêner liens, réactions ni appui long ; interrupteur `LeveragersConfig.CLOSES_KEYBOARD_ON_TIMELINE_TAP` | `features/messages/impl/.../timeline/TimelineView.kt` |
 | Espace → premier salon | Un espace rejoint ouvre son premier salon au lieu de sa page, comme Element Web et iOS (invitation acceptée, lien vers l'espace) : premier salon dans l'ordre de l'accueil (sections d'Element Web puis alphabétique), une conversation privée seulement si l'espace n'a pas d'autre salon, jamais une invitation ; l'espace est remplacé dans la pile (retour vers l'écran d'avant) ; la page reste pour un espace sans salon ou pas encore connu ; interrupteur `LeveragersConfig.OPENS_FIRST_ROOM_OF_SPACES` | `features/home/api/.../SpaceFirstRoomProvider.kt`, `features/home/impl/.../leveragers/SpaceFirstRoom.kt`, `appnav/.../room/joined/JoinedRoomLoadedFlowNode.kt`, `appnav/.../LoggedInFlowNode.kt`, `appnav/build.gradle.kts` |
 | Bulle de frappe | « … est en train d'écrire » devient les avatars des personnes qui écrivent (22 dp) puis une pastille à la couleur des bulles reçues avec les trois points animés de la config web (`lv-frappe`), sans les noms (toujours lus par TalkBack) ; points fixes si les animations sont coupées ; la place reste réservée après le premier affichage ; interrupteur `LeveragersConfig.SHOWS_TYPING_BUBBLE` | `features/messages/impl/.../typing/{TypingBubble,TypingNotificationView,TypingNotificationPresenter,TypingRoomMember}.kt`, `libraries/designsystem/.../avatar/AvatarSize.kt` |
+| Google Play | Numéro de version = version d'Element puis notre numéro de construction (`LEVERAGERS_BUILD_NUMBER`, le numéro d'exécution du workflow) puis le chiffre d'architecture : 26.11.0, construction 13 → AAB `261100130`, APK arm64 `261100132` ; chaque envoi sur Play a un numéro plus haut. Permissions des fonctions coupées retirées du manifeste (service d'appel, micro en arrière-plan, notifications plein écran, installation d'APK, service de position en direct) : plus aucun type de service de premier plan à justifier auprès de Google. Sans permission plein écran, plus de bannière « notifications plein écran pour les appels » à l'accueil ni d'entrée dans les réglages de notifications (`LeveragersConfig.ASKS_FOR_FULL_SCREEN_NOTIFICATIONS`). Lien « Conditions » = politique de modération du contenu de www.leveragers.com, comme iOS (c'était les mentions légales) | `plugins/src/main/kotlin/Versions.kt`, `plugins/src/main/kotlin/config/BuildTimeConfig.kt`, `app/src/main/AndroidManifest.xml`, `libraries/fullscreenintent/impl/.../FullScreenIntentPermissionsPresenter.kt` (+ test), `libraries/fullscreenintent/impl/build.gradle.kts` |
 
 Restent, comme la politique de marque d'Element l'autorise : les mentions des vrais produits Element et les mentions
 de droits d'auteur et de licence (le message d'un ancien appel nomme désormais « Agents », comme sur iOS). Le code est sous AGPL-3.0 (voir `LICENSE`) : ce dépôt public contient la source exacte de chaque version
@@ -54,18 +55,17 @@ doivent être sur cet hôte ou un sous-domaine.
 ## Construction
 
 `.github/workflows/leveragers-android.yml`, lancé à la main (`workflow_dispatch`) : tests unitaires des modules
-touchés, `assembleGplayRelease` (APK par architecture + APK universel), signature par notre clé, sommes SHA-256 ;
+touchés, `assembleGplayRelease` (APK par architecture + APK universel) puis `bundleGplayRelease` (AAB pour Google Play,
+artefact `agents-aab` avec le `mapping.txt` de R8), signature par notre clé (clé d'envoi : Google re-signe l'AAB avec la
+clé de l'app qu'il garde), sommes SHA-256, permissions et manifeste fusionné de l'APK (`permissions.txt`, `manifest.txt`) ;
 puis, sur demande, connexion à chat.leveragers.com sur un émulateur (API 33) avec le compte jetable du secret
 `TEST_ACCOUNT_*`. Seules les captures d'écran sont publiées (le journal de Maestro contient le texte saisi).
 Secrets du dépôt : `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
 `TEST_ACCOUNT_EMAIL`, `TEST_ACCOUNT_PASSWORD`. La clé (PKCS#12) vient de hub2, où elle est gardée et sauvegardée.
-Numéros de version : ceux d'Element pour l'instant (à revoir avant une deuxième version sur la même étiquette).
+Numéros de version : voir le patch « Google Play » (relancer une exécution garde son numéro : Play refuserait l'AAB).
 
 ## Pas encore fait
 
 - Push (Firebase à nous + passerelle Sygnal commune avec iOS).
 - Filtres de liens d'Element restés dans le manifeste (`app.element.io`, `mobile.element.io`, `element://`,
   `elementx://`) : sans vérification possible pour notre identifiant, Android peut proposer un choix d'app.
-- Permissions liées aux fonctions coupées (appels plein écran, installation d'APK) : à retirer avant le Play Store,
-  pour éviter les déclarations correspondantes. Celles de la position sont déjà retirées ; le service de partage de
-  position en direct reste déclaré (jamais lancé).

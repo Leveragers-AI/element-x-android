@@ -1,7 +1,8 @@
-# Leveragers: the only workflow of this fork. Builds the signed APKs of "Agents by Leveragers" and, on request,
+# Leveragers: the only workflow of this fork. Builds the signed APKs of "Agents by Leveragers" and its Google Play
+# bundle (AAB, signed with our upload key; Google re-signs it with the app signing key it keeps) and, on request,
 # signs in to chat.leveragers.com on an emulator with a throwaway test account. Element's own workflows are removed
 # from this branch (see LEVERAGERS.md).
-name: Agents by Leveragers (APK)
+name: Agents by Leveragers (APK and AAB)
 
 on:
   workflow_dispatch:
@@ -17,6 +18,9 @@ permissions:
 env:
   GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+UseG1GC -Dkotlin.daemon.jvm.options=-Xmx4g
   CI_GRADLE_ARG_PROPERTIES: --stacktrace --no-daemon --no-configuration-cache
+  # Our build number, part of the version code (plugins/src/main/kotlin/Versions.kt): every upload to Google Play
+  # must have a higher version code than the one before. A re-run keeps the same number, so Play would refuse its AAB.
+  LEVERAGERS_BUILD_NUMBER: ${{ github.run_number }}
 
 jobs:
   build:
@@ -38,6 +42,7 @@ jobs:
           :features:enterprise:impl-foss:testDebugUnitTest
           :features:login:impl:testDebugUnitTest
           :features:startchat:impl:testDebugUnitTest
+          :libraries:fullscreenintent:impl:testDebugUnitTest
           $CI_GRADLE_ARG_PROPERTIES
       # The screens whose entries depend on LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING (blocking and reporting,
       # needed for Google Play): their tests check the entries match the switch.
@@ -62,6 +67,13 @@ jobs:
           LEVERAGERS_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           LEVERAGERS_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: ./gradlew :app:assembleGplayRelease $CI_GRADLE_ARG_PROPERTIES
+      # A separate Gradle run: app/build.gradle.kts turns the per-ABI APK splits off when a task name contains "bundle".
+      - name: Build the Google Play bundle (AAB)
+        env:
+          LEVERAGERS_KEYSTORE_FILE: ${{ runner.temp }}/upload-key.p12
+          LEVERAGERS_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          LEVERAGERS_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: ./gradlew :app:bundleGplayRelease $CI_GRADLE_ARG_PROPERTIES
       - name: Remove the signing key
         if: always()
         run: rm -f "$RUNNER_TEMP/upload-key.p12"
@@ -72,7 +84,18 @@ jobs:
           sha256sum *.apk | tee SHA256SUMS
           APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
           "$APKSIGNER" verify --verbose --print-certs app-gplay-universal-release.apk | tee apksigner.txt
-          "$ANDROID_HOME"/build-tools/$(ls "$ANDROID_HOME"/build-tools | sort -V | tail -1)/aapt2 dump badging app-gplay-universal-release.apk | head -3 | tee -a apksigner.txt
+          AAPT2="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME"/build-tools | sort -V | tail -1)/aapt2"
+          "$AAPT2" dump badging app-gplay-universal-release.apk | head -3 | tee -a apksigner.txt
+          # What Google Play will see: the permissions, and the full merged manifest (foreground service types).
+          "$AAPT2" dump permissions app-gplay-universal-release.apk | tee permissions.txt
+          "$AAPT2" dump xmltree --file AndroidManifest.xml app-gplay-universal-release.apk > manifest.txt
+          echo "Foreground service types declared:"; grep -c foregroundServiceType manifest.txt || true
+      - name: Checksum and signer of the AAB
+        run: |
+          cd app/build/outputs/bundle/gplayRelease
+          ls -la
+          sha256sum *.aab | tee SHA256SUMS
+          keytool -printcert -jarfile *.aab | tee aab-signer.txt
       - name: Name the phone APK
         run: |
           VERSION="$("$ANDROID_HOME"/build-tools/$(ls "$ANDROID_HOME"/build-tools | sort -V | tail -1)/aapt2 dump badging app/build/outputs/apk/gplay/release/app-gplay-arm64-v8a-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)"
@@ -94,6 +117,20 @@ jobs:
             app/build/outputs/apk/gplay/release/*.apk
             app/build/outputs/apk/gplay/release/SHA256SUMS
             app/build/outputs/apk/gplay/release/apksigner.txt
+            app/build/outputs/apk/gplay/release/permissions.txt
+            app/build/outputs/apk/gplay/release/manifest.txt
+          retention-days: 30
+          if-no-files-found: error
+      # The file to upload to Google Play, with R8's mapping (for readable crash reports in Play Console).
+      - name: Upload the AAB
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: agents-aab
+          path: |
+            app/build/outputs/bundle/gplayRelease/*.aab
+            app/build/outputs/bundle/gplayRelease/SHA256SUMS
+            app/build/outputs/bundle/gplayRelease/aab-signer.txt
+            app/build/outputs/mapping/gplayRelease/mapping.txt
           retention-days: 30
           if-no-files-found: error
 

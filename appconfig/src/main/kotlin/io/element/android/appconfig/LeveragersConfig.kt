@@ -150,4 +150,11 @@ object LeveragersConfig {
      * A truly public room is not offered: our web app forbids it and the server refuses it. Creating a space is unchanged.
      */
     const val HAS_SIMPLIFIED_ROOM_CREATION = true
+
+    /**
+     * Whether the app asks for full-screen notifications, which Element uses to ring for incoming calls (banner on the
+     * home screen, entry in the notification settings). Agents has no calls and does not declare the permission (see
+     * app/src/main/AndroidManifest.xml): Google Play only allows it for calling and alarm apps.
+     */
+    const val ASKS_FOR_FULL_SCREEN_NOTIFICATIONS = false
 }

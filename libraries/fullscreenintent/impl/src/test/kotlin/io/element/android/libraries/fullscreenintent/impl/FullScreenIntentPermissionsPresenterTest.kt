@@ -13,6 +13,7 @@ import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Lifecycle
 import com.google.common.truth.Truth.assertThat
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsEvent
 import io.element.android.libraries.matrix.test.core.aBuildMeta
@@ -29,6 +30,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -39,6 +42,7 @@ class FullScreenIntentPermissionsPresenterTest {
 
     @Test
     fun `shouldDisplay - is true when permission is not granted and banner is not dismissed`() = runTest {
+        assumeTrue(LeveragersConfig.ASKS_FOR_FULL_SCREEN_NOTIFICATIONS)
         val presenter = createPresenter(
             notificationManagerCompat = mockk {
                 every { canUseFullScreenIntent() } returns false
@@ -67,6 +71,7 @@ class FullScreenIntentPermissionsPresenterTest {
 
     @Test
     fun `shouldDisplay - becomes false when permission is granted while the app is in background`() = runTest {
+        assumeTrue(LeveragersConfig.ASKS_FOR_FULL_SCREEN_NOTIFICATIONS)
         var canUseFullScreenIntent = false
         val presenter = createPresenter(
             notificationManagerCompat = mockk {
@@ -84,6 +89,22 @@ class FullScreenIntentPermissionsPresenterTest {
             val finalItem = awaitItem()
             assertThat(finalItem.permissionGranted).isTrue()
             assertThat(finalItem.shouldDisplayBanner).isFalse()
+        }
+    }
+
+    @Test
+    fun `shouldDisplay - is false and nothing is asked when the app does not use full screen notifications`() = runTest {
+        assumeFalse(LeveragersConfig.ASKS_FOR_FULL_SCREEN_NOTIFICATIONS)
+        val presenter = createPresenter(
+            notificationManagerCompat = mockk {
+                every { canUseFullScreenIntent() } returns false
+            }
+        )
+        presenter.testWithLifecycleOwner {
+            skipItems(1)
+            val initialItem = awaitItem()
+            assertThat(initialItem.shouldDisplayBanner).isFalse()
+            assertThat(initialItem.permissionGranted).isTrue()
         }
     }
 

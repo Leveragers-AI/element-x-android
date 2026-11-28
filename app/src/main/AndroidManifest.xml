@@ -18,6 +18,20 @@
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
         tools:node="remove" />
+    <!-- Leveragers: no calls (DefaultSessionEnterpriseService), so no call service, no microphone in the background and
+         no full-screen ringing (Google Play allows full-screen notifications only for calling and alarm apps, see
+         LeveragersConfig.ASKS_FOR_FULL_SCREEN_NOTIFICATIONS). Voice messages keep RECORD_AUDIO. -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.USE_FULL_SCREEN_INTENT"
+        tools:node="remove" />
+    <!-- Leveragers: no installing of APK files received in a room (Google Play restricts this permission to app stores
+         and similar apps); such a file opens with Android's own installer, which refuses it. -->
+    <uses-permission
+        android:name="android.permission.REQUEST_INSTALL_PACKAGES"
+        tools:node="remove" />
 
     <application
         android:name=".ElementXApplication"
@@ -39,6 +53,15 @@
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
+
+        <!-- Leveragers: the foreground services of calls and live location sharing, never started (both features are
+             off). Without them the app declares no foreground service type that Google Play asks to justify. -->
+        <service
+            android:name="io.element.android.features.call.impl.services.CallForegroundService"
+            tools:node="remove" />
+        <service
+            android:name="io.element.android.features.location.impl.live.service.LiveLocationSharingService"
+            tools:node="remove" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import io.element.android.appconfig.LeveragersConfig
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsEvent
@@ -83,9 +84,12 @@ class FullScreenIntentPermissionsPresenter(
             }
         }
 
+        // Leveragers: nothing to ask for when the app does not use full-screen notifications (no calls): no banner,
+        // no entry in the notification settings.
+        val asksForPermission = LeveragersConfig.ASKS_FOR_FULL_SCREEN_NOTIFICATIONS
         return FullScreenIntentPermissionsState(
-            permissionGranted = isGranted,
-            shouldDisplayBanner = !isBannerDismissed && !isGranted,
+            permissionGranted = isGranted || !asksForPermission,
+            shouldDisplayBanner = asksForPermission && !isBannerDismissed && !isGranted,
             eventSink = ::handleEvent,
         )
     }

@@ -21,6 +21,7 @@ setupDependencyInjection()
 
 dependencies {
     api(projects.libraries.fullscreenintent.api)
+    implementation(projects.appconfig)
     implementation(projects.libraries.core)
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.preferences.api)

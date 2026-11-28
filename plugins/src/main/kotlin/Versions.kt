@@ -47,14 +47,25 @@ private const val versionMonth = 11
  */
 private const val versionReleaseNumber = 0
 
+/**
+ * Leveragers: our build number, the run number of the workflow leveragers-android.yml (LEVERAGERS_BUILD_NUMBER,
+ * 0 outside of it). Google Play refuses an upload whose version code is not higher than the previous one, even for a
+ * new build of the same Element version.
+ */
+private val leveragersBuildNumber = System.getenv("LEVERAGERS_BUILD_NUMBER")?.toIntOrNull() ?: 0
+
 object Versions {
     /**
      * Base version code that will be set in the Android Manifest.
      * The value will be modified at build time to add the ABI code when APK are build.
      * AAB will have a ABI code of 0.
      * See comment above for the calculation method.
+     * Leveragers: year on 2 digits, month, release number, then our build number on 2 digits, then (in
+     * app/build.gradle.kts) the ABI digit, 0 for the AAB sent to Google Play. Element 26.11.0, build 13: 26110013,
+     * so 261100130 for the AAB and 261100132 for the arm64 APK. Both parts only grow, so the code keeps growing past
+     * build 99, and it stays far below the Play Store maximum (2_100_000_000).
      */
-    const val VERSION_CODE = (2000 + versionYear) * 10_000 + versionMonth * 100 + versionReleaseNumber
+    val VERSION_CODE = (versionYear * 10_000 + versionMonth * 100 + versionReleaseNumber) * 100 + leveragersBuildNumber
     val VERSION_NAME = "$versionYear.${versionMonth.toString().padStart(2, '0')}.$versionReleaseNumber"
 
     /**
