@@ -31,12 +31,13 @@ object LeveragersConfig {
     const val CAN_CREATE_POLLS = false
 
     /**
-     * Whether users can be blocked and rooms or messages reported. Our agents and colleagues share the same organisation.
-     * Hides "Report" in the message menu, "Report room" in the room list menu and in room details, "Decline and block"
-     * for invitations (room list and invite screen), "Block user" in DM details and member details, and the blocked
-     * users list in the settings.
+     * Whether users can be blocked and rooms or messages reported. When false, hides "Report" in the message menu,
+     * "Report room" in the room list menu and in room details, "Decline and block" for invitations (room list and invite
+     * screen), "Block user" in DM details and member details, and the blocked users list in the settings.
+     * True since 28/11/2026: Google Play's User Generated Content policy requires in-app reporting of content and users
+     * and blocking of users, even for an app used only within one company. Reports go to the chat server's admin room.
      */
-    const val ALLOWS_BLOCKING_AND_REPORTING = false
+    const val ALLOWS_BLOCKING_AND_REPORTING = true
 
     /**
      * Whether "Invite people" is offered in the details of a direct message. It would turn the conversation with an
