@@ -27,6 +27,11 @@
     <uses-permission
         android:name="android.permission.USE_FULL_SCREEN_INTENT"
         tools:node="remove" />
+    <!-- Leveragers: and the camera in the background, asked by the service of Element's native call component
+         (io.element.android:element-call), removed below. -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_CAMERA"
+        tools:node="remove" />
     <!-- Leveragers: no installing of APK files received in a room (Google Play restricts this permission to app stores
          and similar apps); such a file opens with Android's own installer, which refuses it. -->
     <uses-permission
@@ -54,13 +59,17 @@
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
 
-        <!-- Leveragers: the foreground services of calls and live location sharing, never started (both features are
-             off). Without them the app declares no foreground service type that Google Play asks to justify. -->
+        <!-- Leveragers: the foreground services of calls (Element X's and its native call component's) and of live
+             location sharing, never started (both features are off). Without them the app declares no foreground
+             service type that Google Play asks to justify (the push fetch service left is a "shortService"). -->
         <service
             android:name="io.element.android.features.call.impl.services.CallForegroundService"
             tools:node="remove" />
         <service
             android:name="io.element.android.features.location.impl.live.service.LiveLocationSharingService"
+            tools:node="remove" />
+        <service
+            android:name="io.element.android.call.impl.services.ElementCallForegroundService"
             tools:node="remove" />
 
         <provider
