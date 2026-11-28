@@ -39,6 +39,17 @@ jobs:
           :features:login:impl:testDebugUnitTest
           :features:startchat:impl:testDebugUnitTest
           $CI_GRADLE_ARG_PROPERTIES
+      # The screens whose entries depend on LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING (blocking and reporting,
+      # needed for Google Play): their tests check the entries match the switch.
+      - name: Unit tests of the blocking and reporting entries
+        run: |
+          set -e
+          ./gradlew :features:home:impl:testDebugUnitTest --tests '*RoomListDeclineInviteMenuTest' $CI_GRADLE_ARG_PROPERTIES
+          ./gradlew :features:joinroom:impl:testDebugUnitTest --tests '*JoinRoomViewTest' $CI_GRADLE_ARG_PROPERTIES
+          ./gradlew :features:messages:impl:testDebugUnitTest --tests '*ActionListPresenterTest' $CI_GRADLE_ARG_PROPERTIES
+          ./gradlew :features:preferences:impl:testDebugUnitTest --tests '*ModerationAndSafetyViewTest' $CI_GRADLE_ARG_PROPERTIES
+          ./gradlew :features:roomdetails:impl:testDebugUnitTest --tests '*RoomDetailsViewTest' $CI_GRADLE_ARG_PROPERTIES
+          ./gradlew :features:userprofile:shared:testDebugUnitTest --tests '*UserProfileViewTest' $CI_GRADLE_ARG_PROPERTIES
       - name: Restore the signing key
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
