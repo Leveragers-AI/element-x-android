@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Leveragers: French of the texts of values/strings.xml.
+  -->
+<resources>
+    <string name="leveragers_update_required_title">"Mise à jour requise"</string>
+    <string name="leveragers_update_required_message">"Cette version d'Agents n'est plus prise en charge. Mettez l'app à jour pour continuer."</string>
+    <string name="leveragers_update_available_title">"Mise à jour disponible"</string>
+    <string name="leveragers_update_available_message">"Une nouvelle version d'Agents est disponible."</string>
+    <string name="leveragers_update_action_update">"Mettre à jour"</string>
+    <string name="leveragers_update_action_later">"Plus tard"</string>
+</resources>

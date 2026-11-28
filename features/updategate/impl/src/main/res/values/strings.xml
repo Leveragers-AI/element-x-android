@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Leveragers: texts of the update check. Ours, not Element's: Localazy only regenerates its localazy.xml and
+  ~ translations.xml files.
+  -->
+<resources>
+    <string name="leveragers_update_required_title">"Update required"</string>
+    <string name="leveragers_update_required_message">"This version of Agents is no longer supported. Update the app to continue."</string>
+    <string name="leveragers_update_available_title">"Update available"</string>
+    <string name="leveragers_update_available_message">"A new version of Agents is available."</string>
+    <string name="leveragers_update_action_update">"Update"</string>
+    <string name="leveragers_update_action_later">"Later"</string>
+</resources>

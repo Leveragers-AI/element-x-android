@@ -43,6 +43,7 @@ jobs:
           :features:login:impl:testDebugUnitTest
           :features:startchat:impl:testDebugUnitTest
           :libraries:fullscreenintent:impl:testDebugUnitTest
+          :features:updategate:impl:testDebugUnitTest
           $CI_GRADLE_ARG_PROPERTIES
       # The screens whose entries depend on LeveragersConfig.ALLOWS_BLOCKING_AND_REPORTING (blocking and reporting,
       # needed for Google Play): their tests check the entries match the switch.

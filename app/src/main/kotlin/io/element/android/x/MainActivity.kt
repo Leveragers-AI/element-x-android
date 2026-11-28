@@ -34,6 +34,8 @@ import io.element.android.features.lockscreen.api.LockScreenEntryPoint
 import io.element.android.features.lockscreen.api.LockScreenLockState
 import io.element.android.features.lockscreen.api.LockScreenService
 import io.element.android.features.lockscreen.api.handleSecureFlag
+import io.element.android.features.updategate.impl.UpdateGate
+import io.element.android.features.updategate.impl.checkForAppUpdate
 import io.element.android.libraries.architecture.appyx.DebugNavStateNodeHost
 import io.element.android.libraries.architecture.bindings
 import io.element.android.libraries.core.log.logger.LoggerTag
@@ -59,7 +61,10 @@ class MainActivity : NodeActivity() {
         setupLockManagement(appBindings.lockScreenService(), appBindings.lockScreenEntryPoint())
         enableEdgeToEdge()
         setContent {
-            MainContent(appBindings)
+            // Leveragers: the update check (LEVERAGERS.md), a blocking screen instead of the app or a dialog over it.
+            UpdateGate {
+                MainContent(appBindings)
+            }
         }
 
         val activity = this
@@ -171,6 +176,8 @@ class MainActivity : NodeActivity() {
     override fun onResume() {
         super.onResume()
         Timber.tag(loggerTag.value).d("onResume")
+        // Leveragers: the update file is read again at launch and back in the foreground, at most once an hour.
+        checkForAppUpdate()
     }
 
     override fun onDestroy() {
